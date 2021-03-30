@@ -12,3 +12,9 @@ instance/
 misc/
 static/.DS_Store
 static/tablesorter-master
+
+# Ignore cmake and cget build artifacts
+CMakeCache.txt
+CMakeFiles/
+cget/
+
