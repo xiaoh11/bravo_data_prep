@@ -60,7 +60,7 @@ def addCADD(in_VCF, in_CADD_files, out_VCF):
                 raise Exception('{} already exists in input VCF/BCF.'.format(x))
         ifile.header.add_line('##INFO=<ID=CADD_RAW,Number=A,Type=Float,Description="Raw CADD scores">')
         ifile.header.add_line('##INFO=<ID=CADD_PHRED,Number=A,Type=Float,Desctiption="Phred-scaled CADD scores">')
-        ofile.write('{}'.format(ifile.header))
+        ofile.write('{}'.format(ifile.header).encode())
         for record in ifile:
             raw_scores = []
             phred_scores = []
@@ -71,7 +71,7 @@ def addCADD(in_VCF, in_CADD_files, out_VCF):
             if any(x for x in raw_scores) and any(x for x in phred_scores):
                 record.info['CADD_RAW'] = raw_scores
                 record.info['CADD_PHRED'] = phred_scores
-            ofile.write('{}'.format(record))
+            ofile.write('{}'.format(record).encode())
 
 
 if __name__ == "__main__":
