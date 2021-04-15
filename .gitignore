@@ -18,3 +18,10 @@ CMakeCache.txt
 CMakeFiles/
 cget/
 
+# Ignore nextflow artifacts
+*.nextflow.log*
+.nextflow/
+bin/
+data/
+work/
+result/
