@@ -32,6 +32,7 @@ window_bp = None
 
 
 def process_sample(cram_path, reference_path, regions, ocram):
+    sys.stdout.write(f"process sample: {cram_path}\n")
     with pysam.AlignmentFile(cram_path, 'rc', reference_filename = reference_path) as icram:
         for region in regions:
             process_region(icram, region, ocram)
@@ -53,6 +54,7 @@ def process_region(icram, region, ocram):
 
 
 if __name__ == '__main__':
+    sys.stdout.write("Main begin.\n")
     args = argparser.parse_args()
     window_bp = args.window
     if args.command == 'samples':
@@ -66,6 +68,7 @@ if __name__ == '__main__':
         for sample in unique_samples:
             sys.stdout.write('{}\n'.format(sample))
     elif args.command == 'cram':
+        print("cram command")
         crams = dict()
         with open(args.inCRAMs, 'r') as ifile:
             for line in ifile:
@@ -75,6 +78,7 @@ if __name__ == '__main__':
                     cram_path = fields[1].strip()
                     crams[sample_id] = cram_path
         if len(crams) == 0:
+            sys.stdout.write("crams length is 0. exiting.\n")
             sys.exit(0)
         samples = dict()
         max_het = 0
@@ -112,7 +116,8 @@ if __name__ == '__main__':
                 header['SQ'].append(sq_line)
         with pysam.AlignmentFile(args.outFile, 'wc', reference_filename = args.inReference, header = header) as ocram:
             for i, (sample, sample_variants) in enumerate(samples.items(), 1):
-                process_sample(crams[sample], args.inReference, sample_variants, ocram)
+                if os.stat(crams[sample]).st_size > 0:
+                    process_sample(crams[sample], args.inReference, sample_variants, ocram)
                 if i % 100 == 0:
                     sys.stdout.write('Processed {}/{} sample(s).\n'.format(i, len(samples)))
         sys.stdout.write('Done ({}/{}).\n'.format(i, len(samples)))
