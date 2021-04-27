@@ -1,10 +1,16 @@
 # Prepare VCF Pipeline Dependencies
+Install dependencies and take note of where you put them.
+The executables either need to be in the PATH of the executing environment,
+or the full path to them will need to be supplied to the nextflow configs.
 
 ## Reference Sequence Data
 ```
 curl ftp://share.sph.umich.edu/vt/grch38/hs38DH.fa -o hs38DH.fa
 curl ftp://share.sph.umich.edu/vt/grch38/hs38DH.fa.fai -o hs38DH.fa.fai
 ```
+
+## BamUtil
+Clone and install from [bamUtil repo](https://github.com/statgen/bamUtil)
 
 ## VEP
 Installation instructions via ensembl site.

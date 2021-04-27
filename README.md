@@ -21,7 +21,7 @@ cget install .
 This build executables in `data_prep/cpp_tools/cget/bin`
 
 ### External Tools and Data
-VEP, Loftee, and refernce data required is described in [dependencies.md](dependencies.md)
+BamUtil, VEP, Loftee, and refernce data required is described in [dependencies.md](dependencies.md)
 
 ## Nextflow Scripts
 In the `workflows/` directory are three Nextflow configs and scripts used to prepare the backing data for the BRAVO API.
