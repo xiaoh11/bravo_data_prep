@@ -1,4 +1,4 @@
-#!/usr/bin/env python2
+#!/usr/bin/env python
 
 import argparse
 import contextlib
@@ -262,12 +262,18 @@ def _load_percentiles_from_vcf(vcf):
                 n_matched += res.matched_count
                 n_modified += res.modified_count
                 requests = []
-                print 'VCF {}. Processed {} variant(s) in {} second(s), {} matched, {} modified.'.format(vcf, n_variants, int(time.time() - start_time), n_matched, n_modified) 
+                duration = int(time.time() - start_time)
+                message = (f"VCF {vcf}. Processed {n_variants} variant(s) in {duration} second(s),"
+                           f"{n_matched} matched, {n_modified} modified.")
+                print(message)
         if len(requests) > 0:
             res = db.variants.bulk_write(requests, ordered = False)
             n_matched += res.matched_count
             n_modified += res.modified_count
-            print 'Finished. VCF {}. Processed {} variant(s) in {} second(s), {} matched, {} modified.'.format(vcf, n_variants, int(time.time() - start_time), n_matched, n_modified)
+            duration = int(time.time() - start_time)
+            message = (f"VCF {vcf}. Processed {n_variants} variant(s) in {duration} second(s),"
+                        f"{n_matched} matched, {n_modified} modified.")
+            print(message)
 
 
 def load_percentiles(variant_files, threads):

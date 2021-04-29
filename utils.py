@@ -6,30 +6,30 @@ AF_BUCKETS = [0.0001, 0.0002, 0.0005, 0.001, 0.002, 0.005, 0.01, 0.02, 0.05, 0.1
 
 
 METRICS = {
-    'BaseQRankSum':{},
-    'ClippingRankSum':{},
-    'DP':{'name':'Total Depth'},
-    'FS':{},
-    'InbreedingCoeff':{},
-    'MQ':{'name':'Mapping Quality'},
-    'MQRankSum':{},
-    'QD':{},
-    'ReadPosRankSum':{},
-    'VQSLOD':{},
-    'SVM':{'name':'SVM Score'},
-    'FIBC_P':{'name':'In-Breeding Coefficient'},
-    'FIBC_I':{'name':'In-Breeding Coefficient (pop-adjusted)'},
-    'HWE_SLP_P':{'name':'HWE signed log p-value'},
-    'HWE_SLP_I':{'name':'HWE signed log p-value (pop-adjusted)'},
-    'ABE':{'name':'Expected Allele Balance'},
-    'ABZ':{'name':'Allele Balance Z-score'},
-    'BQZ':{'name':'BaseQual-Allele correlation'},
-    'CYZ':{'name':'Cycle-Allele correlation'},
-    'STZ':{'name':'Strand-Allele correlation'},
-    'IOR':{'name':'Inflated Rate of Observing other alleles (log10)'},
-    'NM0':{'name':'Avg num mismatches in reads with ref alleles'},
-    'NM1':{'name':'Avg num mismatches in reads with alt alleles'},
-    'NMZ':{'name':'Mismatches/read-Allele correlation'},
+    'BaseQRankSum': {},
+    'ClippingRankSum': {},
+    'DP': {'name': 'Total Depth'},
+    'FS': {},
+    'InbreedingCoeff': {},
+    'MQ': {'name': 'Mapping Quality'},
+    'MQRankSum': {},
+    'QD': {},
+    'ReadPosRankSum': {},
+    'VQSLOD': {},
+    'SVM': {'name': 'SVM Score'},
+    'FIBC_P': {'name': 'In-Breeding Coefficient'},
+    'FIBC_I': {'name': 'In-Breeding Coefficient (pop-adjusted)'},
+    'HWE_SLP_P': {'name': 'HWE signed log p-value'},
+    'HWE_SLP_I': {'name': 'HWE signed log p-value (pop-adjusted)'},
+    'ABE': {'name': 'Expected Allele Balance'},
+    'ABZ': {'name': 'Allele Balance Z-score'},
+    'BQZ': {'name': 'BaseQual-Allele correlation'},
+    'CYZ': {'name': 'Cycle-Allele correlation'},
+    'STZ': {'name': 'Strand-Allele correlation'},
+    'IOR': {'name': 'Inflated Rate of Observing other alleles (log10)'},
+    'NM0': {'name': 'Avg num mismatches in reads with ref alleles'},
+    'NM1': {'name': 'Avg num mismatches in reads with alt alleles'},
+    'NMZ': {'name': 'Mismatches/read-Allele correlation'},
 }
 for k,v in METRICS.items(): v.setdefault('name',k)
 
@@ -191,7 +191,7 @@ class defaultdict_that_passes_key_to_default_factory(dict):
 
 def indent_pprint(obj):
     import pprint
-    print '\n'.join('####'+line for line in pprint.pformat(obj).split('\n'))
+    print('\n').join('####'+line for line in pprint.pformat(obj).split('\n'))
 def mkdict(*dicts, **ret):
     for d in dicts: ret.update({k:True for k in d} if isinstance(d, (set,list)) else d)
     return ret
@@ -210,7 +210,7 @@ def histogram_from_counter(counter, num_bins=10, bin_range=None):
     bin_width = float(bin_range[1] - bin_range[0]) / num_bins
     if bin_width == 0:
         only_key = counter.keys()[0]
-        print 'Warning: metric always had the value {}'.format(counter.keys())
+        print(f"Warning: metric always had the value {counter.keys()}")
         return {'left_edges': [only_key-1, only_key, only_key+1], 'mids': [only_key-1, only_key, only_key+1], 'counts': [0, counter.values()[0], 0]}
     bin_left_edges = [bin_range[0] + bin_width * i for i in range(num_bins)]
     bin_counts = [0]*num_bins
@@ -219,7 +219,7 @@ def histogram_from_counter(counter, num_bins=10, bin_range=None):
         try:
             bin_i = int(floor(bin_i))
         except:
-            print 'error on', bin_i, key, bin_range[0], bin_range[1], bin_width
+            print(f"error on: {bin_i} {key} {bin_range[0]} {bin_range[1]}  {bin_width}")
             raise
         bin_i = clamp(bin_i, min_value=0, max_value=num_bins-1)
         bin_counts[bin_i] += count
