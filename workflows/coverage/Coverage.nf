@@ -5,8 +5,8 @@ process pileup {
   tuple val(name), file(cram), file(crai) from Channel 
                                                  .fromPath(params.cram_files)
                                                  .map{ ["${it.getSimpleName()}",
-                                                        "${it}",
-                                                        "${it}.crai"] }
+                                                        file("${it}"),
+                                                        file("${it}.crai")] }
   each chromosome from Channel.from(params.chromosomes)
 
   // Use a value channel allowing reuse
@@ -27,33 +27,29 @@ process pileup {
     bam clipOverlap --in - --out - |\
     ${params.samtools} mpileup -f ${ref} -Q 20 - |\
     cut -f1,2,4 | bgzip > ${chromosome}.${name}.depth.gz
-  tabix -s1 -b2 -e3 ${chromosome}.${name}.depth.gz
+  tabix -s1 -b2 -e2 ${chromosome}.${name}.depth.gz
   """
 }
 
-
-// Were these processes being worked on or vestigial? 
-/*process aggregate {
-   errorStrategy "ignore"
-
+/*
+process aggregate {
    input:
-   set val(chromosome), file(depth_files) from pileups.groupTuple()
+   tuple val(chromosome), file(depth_files) from pileups.groupTuple()
 
    output:
-   set val(chromosome), file("${chromosome}.full.json.gz"), file("${chromosome}.full.json.gz.tbi") into aggregated
+   tuple val(chromosome), file("${chromosome}.full.json.gz"), file("${chromosome}.full.json.gz.tbi") into aggregated
 
-   publishDir "results/full", pattern: "*.full.json.gz*"
+   publishDir "result/full", pattern: "*.full.json.gz*"
 
    """
    find . -name "${chromosome}.*.depth.gz" > files_list.txt
    ${params.aggregate} -i files_list.txt -o ${chromosome}.full.json.gz
    """
 }
+*/
 
-
+/*
 process prune {
-   errorStrategy "ignore"
-
    input:
    set val(chromosome), file(full_json), file(full_json_tbi) from aggregated
    each limit from Channel.from(params.prune_limits)
@@ -61,9 +57,10 @@ process prune {
    output:
    set file("${chromosome}.bin_${limit}.json.gz"), file("${chromosome}.bin_${limit}.json.gz.tbi")
 
-   publishDir "results/bin_${limit}", pattern: "*.bin_*.json.gz*"
+   publishDir "result/bin_${limit}", pattern: "*.bin_*.json.gz*"
 
    """
    ${params.prune} -i ${full_json} -l ${limit} -o ${chromosome}.bin_${limit}.json.gz
    """
-}*/
+}
+*/
