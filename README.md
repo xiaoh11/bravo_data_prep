@@ -9,6 +9,10 @@ Processing data to power the BRowse All Variants Online (BRAVO) API
 1. Modify nextflow configs to match paths on your system.
 1. Run nextflow workflows
 
+## Input Data
+**Naming:** The pipeline depends on the names of the input cram files having the sample ID as the first part of the filename.
+Specifically, the expectation that the ID preceeds the first `.` such that a call to `getSimpleName()` yields the ID.
+
 ## Data Preparation Tools
 
 ### Compile Custom Tools
