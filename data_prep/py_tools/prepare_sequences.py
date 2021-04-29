@@ -32,7 +32,6 @@ window_bp = None
 
 
 def process_sample(cram_path, reference_path, regions, ocram):
-    sys.stdout.write(f"process sample: {cram_path}\n")
     with pysam.AlignmentFile(cram_path, 'rc', reference_filename = reference_path) as icram:
         for region in regions:
             process_region(icram, region, ocram)
@@ -68,7 +67,7 @@ if __name__ == '__main__':
         for sample in unique_samples:
             sys.stdout.write('{}\n'.format(sample))
     elif args.command == 'cram':
-        print("cram command")
+        sys.stdout.write("cram command")
         crams = dict()
         with open(args.inCRAMs, 'r') as ifile:
             for line in ifile:
