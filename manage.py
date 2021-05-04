@@ -21,10 +21,18 @@ argparser = argparse.ArgumentParser(description = 'Tool for creating and populat
 argparser_subparsers = argparser.add_subparsers(help = '', dest = 'command')
 
 argparser_gene_models = argparser_subparsers.add_parser('genes', help = 'Creates and populates MongoDB collections for gene models.')
-argparser_gene_models.add_argument('-t', '--canonical-transcripts', metavar = 'file', required = True, type = str, dest = 'canonical_transcripts_file', help = 'File (compressed using Gzip) with a list of canonical transcripts. Must have two columns without a header. First column stores Ensembl gene ID, second column stores Ensembl transcript ID.')
-argparser_gene_models.add_argument('-m', '--omim', metavar = 'file', required = True, type = str, dest = 'omim_file', help = 'File (compressed using Gzip) with genes descriptions from OMIM. Required columns separated by tab: Gene stable ID, Transcript stable ID, MIM gene accession, MIM gene description.')
-argparser_gene_models.add_argument('-f', '--dbnsfp', metavar = 'file', required = True, type = str, dest = 'genenames_file', help = 'File (compressed using Gzip) with gene names from HGNC. Required columns separated by tab: symbol, name, alias_symbol, prev_name, ensembl_gene_id.')
-argparser_gene_models.add_argument('-g', '--gencode', metavar = 'file', required = True, type = str, dest = 'gencode_file', help = 'File from GENCODE in compressed GTF format.')
+argparser_gene_models.add_argument('-t', '--canonical-transcripts', metavar = 'file',
+                                   required = True, type = str, dest = 'canonical_transcripts_file',
+                                   help = 'File (compressed using Gzip) with a list of canonical transcripts. Must have two columns without a header. First column stores Ensembl gene ID, second column stores Ensembl transcript ID.')
+argparser_gene_models.add_argument('-m', '--omim', metavar = 'file', required = True, type = str,
+                                   dest = 'omim_file', help = 'File (compressed using Gzip) with genes descriptions from OMIM. Required columns separated by tab: Gene stable ID, Transcript stable ID, MIM gene accession, MIM gene description.')
+argparser_gene_models.add_argument('-f', '--dbnsfp', metavar = 'file', required = True, type = str,
+                                   dest = 'genenames_file',
+                                   help = ('File (compressed using Gzip) with gene names from HGNC.'
+                                           ' Required columns separated by tab: symbol, name,'
+                                           ' alias_symbol, prev_name, ensembl_gene_id.'))
+argparser_gene_models.add_argument('-g', '--gencode', metavar = 'file', required = True, type = str,
+                                   dest = 'gencode_file', help = 'File from GENCODE in compressed GTF format.')
 
 argparser_users = argparser_subparsers.add_parser('users', help = 'Creates MongoDB collection for user data.')
 
