@@ -31,10 +31,9 @@ process pileup {
   """
 }
 
-/*
 process aggregate {
    input:
-   tuple val(chromosome), file(depth_files) from pileups.groupTuple()
+   tuple val(chromosome), file(depth_files), file(depth_tbis) from pileups.groupTuple()
 
    output:
    tuple val(chromosome), file("${chromosome}.full.json.gz"), file("${chromosome}.full.json.gz.tbi") into aggregated
@@ -46,16 +45,14 @@ process aggregate {
    ${params.aggregate} -i files_list.txt -o ${chromosome}.full.json.gz
    """
 }
-*/
 
-/*
 process prune {
    input:
    set val(chromosome), file(full_json), file(full_json_tbi) from aggregated
    each limit from Channel.from(params.prune_limits)
 
    output:
-   set file("${chromosome}.bin_${limit}.json.gz"), file("${chromosome}.bin_${limit}.json.gz.tbi")
+   tuple file("${chromosome}.bin_${limit}.json.gz"), file("${chromosome}.bin_${limit}.json.gz.tbi")
 
    publishDir "result/bin_${limit}", pattern: "*.bin_*.json.gz*"
 
@@ -63,4 +60,3 @@ process prune {
    ${params.prune} -i ${full_json} -l ${limit} -o ${chromosome}.bin_${limit}.json.gz
    """
 }
-*/
