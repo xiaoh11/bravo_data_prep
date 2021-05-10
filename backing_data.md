@@ -1,8 +1,8 @@
 # BRAVO API Backing Data.
 
-Data required by the manage.py commands 
+Data required by bravo2 data loading custom flask commands.
 
-## gene
+## load\_genes
 
 #### Genenames: HUGO Gene Nomenclature Commitee (HGNC)
 Can be obtained from [genenames custom downloads](https://www.genenames.org/download/custom/)
@@ -52,10 +52,10 @@ read -r -d '' RAW_QUERY <<-HEREDOC
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE Query>
 <Query  virtualSchemaName = "default" formatter = "TSV" header = "0" uniqueRows = "0" count = "" datasetConfigVersion = "0.6" >
-<Dataset name = "hsapiens_gene_ensembl" interface = "default" >
-<Attribute name = "ensembl_gene_id" />
-<Attribute name = "ensembl_transcript_id" />
-</Dataset>
+	<Dataset name = "hsapiens_gene_ensembl" interface = "default" >
+		<Attribute name = "ensembl_gene_id" />
+		<Attribute name = "ensembl_transcript_id" />
+	</Dataset>
 </Query>
 HEREDOC
 
@@ -69,5 +69,33 @@ curl "${QUERY_URL}" > canonical_transcripts.txt
 gzip canonical_transcripts.txt
 ```
 
+#### OMIM File
+Sourced from Ensembl's [Biomart tool](https://www.ensembl.org/info/data/biomart/)
+Required columns separated by tab: Gene stable ID, Transcript stable ID, MIM gene accession, MIM gene description.
+The following is the query xml wrapped in bash to facilitate pulling it from the biomart endpoint.
 
+```sh
+read -r -d '' XML_QUERY <<-HEREDOC 
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE Query>
+<Query  virtualSchemaName = "default" formatter = "TSV" header = "1" uniqueRows = "0" count = "" datasetConfigVersion = "0.6" >
+	<Dataset name = "hsapiens_gene_ensembl" interface = "default" >
+		<Attribute name = "ensembl_gene_id" />
+		<Attribute name = "ensembl_transcript_id" />
+		<Attribute name = "mim_gene_accession" />
+		<Attribute name = "mim_gene_description" />
+	</Dataset>
+</Query>
+HEREDOC
 
+curl "http://www.ensembl.org/biomart/martservice" \
+  --data-urlencode "query=${XML_QUERY}" > omim_ensembl_refs.txt
+gzip omim_ensembl_refs.txt
+```
+
+#### Gencode File
+This file serves as the source list of genes to collate the other data
+```
+GEN_URL=ftp://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_human/release_38/gencode.v38.annotation.gtf.gz
+curl ${GEN_URL} > gencode.v38.annotation.gtf.gz
+```

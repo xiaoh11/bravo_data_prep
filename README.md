@@ -32,8 +32,25 @@ In the `workflows/` directory are three Nextflow configs and scripts used to pre
 
 Details about the steps of the pipeline are detailed in [data\_prep\_steps.md](data_prep_steps.md).
 
-### Recommended Data Setup
+### Data Directory Contents Setup
 Consolidating the results from the nextflow scripts into a single data directory as follows to power the BRAVO API.
+
+- `reference/` holds the refercence fasta files for the genome
+- API's `SEQUENCE_DIR` config val is asking for directory that contains the 'sequences' directory.
+  - sequences dirname is hardcoded
+  - `variant_map.tsv.gz` file name is hardcoded.
+  - `variant_map.tsv.gz.tbi` file name is hardcoded.
+- Under sequence/, directory structure and filenames are perscribed.
+  - All two hex character directories 00 to ff should exist as subdirectories.
+  - cram files must have the filename in the exact form of `sample_id.cram`
+  - The sub dir a cram belongs in is the first two characters of the md5 hexdigest of the sample_id.
+    - E.g. foobar123.cram would be in directory "ae"
+        ```python
+        hashlib.md5("foobar123".encode()).hexdigest()[:2]
+        ```
+- coverage directory contents are taken from result/ dir of coverage workflow
+- `variant_map.tsv.gz` is the result of
+    
 
 ```sh
 data/
@@ -44,6 +61,7 @@ data/
 │   ├── bin_50e-2
 │   ├── bin_75e-2
 │   └── full
+├── external
 ├── crams
 │   ├── sequences
 │   ├── variant_map.tsv.gz
