@@ -92,7 +92,6 @@ process cadd {
  
   script:
   def script_file = file(params.add_cadd_script)
-  //python ${add_cadd_script} -i ${vcf} -c ${cadd} -o ${vcf}.cadd_ok.vcf.gz
   """
   python ${script_file} -i ${vcf} -c ${cadd} -o ${vcf}.cadd_ok.vcf.gz
   tabix ${vcf}.cadd_ok.vcf.gz
