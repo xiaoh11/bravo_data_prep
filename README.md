@@ -13,6 +13,12 @@ Processing data to power the BRowse All Variants Online (BRAVO) API
 **Naming:** The pipeline depends on the names of the input cram files having the sample ID as the first part of the filename.
 Specifically, the expectation that the ID preceeds the first `.` such that a call to `getSimpleName()` yields the ID.
 
+### Sequence Data
+Source cram files.  Original sequences from which the variant calls were made.
+
+### Variant calls
+Source bcf files. Generated running the [topmed variant calling pipeline](https://github.com/statgen/topmed_variant_calling) 
+
 ## Data Preparation Tools
 
 ### Compile Custom Tools
@@ -27,13 +33,15 @@ This build executables in `data_prep/cpp_tools/cget/bin`
 ### External Tools and Data
 BamUtil, VEP, Loftee, and refernce data required is described in [dependencies.md](dependencies.md)
 
-## Nextflow Scripts
+### Nextflow Scripts
 In the `workflows/` directory are three Nextflow configs and scripts used to prepare the backing data for the BRAVO API.
 
 Details about the steps of the pipeline are detailed in [data\_prep\_steps.md](data_prep_steps.md).
 
-### Data Directory Contents Setup
-Consolidating the results from the nextflow scripts into a single data directory as follows to power the BRAVO API.
+## Data Directory Contents Setup
+We consolidate the results from the nextflow scripts into a single data directory.
+It powers the BRAVO API.
+It contains all the runtime data on disk as well as the basis data that gets processed into the mongo db.
 
 - `reference/` holds the refercence fasta files for the genome
 - API's `SEQUENCE_DIR` config val is asking for directory that contains the 'sequences' directory.
@@ -49,7 +57,7 @@ Consolidating the results from the nextflow scripts into a single data directory
         hashlib.md5("foobar123".encode()).hexdigest()[:2]
         ```
 - coverage directory contents are taken from result/ dir of coverage workflow
-- `variant_map.tsv.gz` is the result of
+- `variant_map.tsv.gz` is an output of `RandomHetHom3`
     
 
 ```sh
@@ -61,7 +69,6 @@ data/
 │   ├── bin_50e-2
 │   ├── bin_75e-2
 │   └── full
-├── external
 ├── crams
 │   ├── sequences
 │   ├── variant_map.tsv.gz

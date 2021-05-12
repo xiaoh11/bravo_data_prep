@@ -3,6 +3,9 @@ Install dependencies and take note of where you put them.
 The executables either need to be in the PATH of the executing environment,
 or the full path to them will need to be supplied to the nextflow configs.
 
+## [Nextflow](https://www.nextflow.io/)
+Data processing workflows are written in Nextflow's DSL.
+
 ## Reference Sequence Data
 ```
 curl ftp://share.sph.umich.edu/vt/grch38/hs38DH.fa -o hs38DH.fa
