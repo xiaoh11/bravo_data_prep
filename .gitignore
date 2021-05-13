@@ -25,3 +25,6 @@ bin/
 data/
 work/
 result/
+
+# Ignore old prod config data
+crams.subset2.txt
