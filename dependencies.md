@@ -6,7 +6,10 @@ or the full path to them will need to be supplied to the nextflow configs.
 ## [Nextflow](https://www.nextflow.io/)
 Data processing workflows are written in Nextflow's DSL.
 
-## Reference Sequence Data
+## External Data Sources
+See [basis\_data.md](basis_data.md) for list of external data used in load genes.
+
+### Reference Sequence Data
 ```
 curl ftp://share.sph.umich.edu/vt/grch38/hs38DH.fa -o hs38DH.fa
 curl ftp://share.sph.umich.edu/vt/grch38/hs38DH.fa.fai -o hs38DH.fa.fai

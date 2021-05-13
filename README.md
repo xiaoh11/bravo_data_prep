@@ -6,7 +6,7 @@ Processing data to power the BRowse All Variants Online (BRAVO) API
     1. Install external tools
     1. Download external data
 1. Collect data to be processed into convenient location.
-1. Modify nextflow configs to match paths on your system.
+1. Modify nextflow configs to match paths on your system or cluster.
 1. Run nextflow workflows
 
 ## Input Data
@@ -30,15 +30,23 @@ cget install .
 ```
 This build executables in `data_prep/cpp_tools/cget/bin`
 
-### External Tools and Data
-BamUtil, VEP, Loftee, and refernce data required is described in [dependencies.md](dependencies.md)
+### External Tools
+BamUtil, VEP, and Loftee tools required are described in [dependencies.md](dependencies.md)
 
-### Nextflow Scripts
-In the `workflows/` directory are three Nextflow configs and scripts used to prepare the backing data for the BRAVO API.
+### External Data
+Gencode, Ensembl, dbSNP, and HUGO data required are described in [basis\_data.md](basis_data.md)
+
+## Nextflow Scripts
+In the `workflows/` directory are three Nextflow configs and scripts used to prepare the runtime data for the BRAVO API.
 
 Details about the steps of the pipeline are detailed in [data\_prep\_steps.md](data_prep_steps.md).
 
 ## Data Directory Contents Setup
+
+There are two data sets that Bravo API needs to run:
+- *Backing Data* are flat files on disk read at runtime.
+- *Basis Data* files processed and loaded into mongo db.
+
 We consolidate the results from the nextflow scripts into a single data directory.
 It powers the BRAVO API.
 It contains all the runtime data on disk as well as the basis data that gets processed into the mongo db.

@@ -1,23 +1,29 @@
-# BRAVO API Backing Data.
+# BRAVO API Basis Data.
 
-Data required by bravo2 data loading custom flask commands.
-
-## load\_genes
+Reference Data required by bravo2 data loading into mongo via `load\_genes` command of Bravo API.
 
 #### Genenames: HUGO Gene Nomenclature Commitee (HGNC)
 Can be obtained from [genenames custom downloads](https://www.genenames.org/download/custom/)
-Check the Approved symbol, Approved name, Previous symbols, Alias symbols, Ensembl gene ID boxes.
-In advanced filtering section, use this where clause in the text box to cut down on the number of results to illustrate this example.
-```
-gd_app_sym IN ('HBB', 'HBD', 'HBM', 'HBZ', 'HBA1', 'HBA2' ,'HBE1' ,'HBG1' ,'HBG2' ,'HBQ1' ,'HBAP1' ,'HBBP1' ,'HBXP1')
-```
-The above query can be [url encoded](https://www.genenames.org/cgi-bin/download/custom?col=gd_app_sym&col=gd_app_name&col=gd_prev_sym&col=gd_aliases&col=gd_pub_ensembl_id&status=Approved&order_by=gd_app_sym_sort&format=text&where=gd_app_sym%20IN%20(%27HBB%27,%20%27HBD%27,%20%27HBM%27,%20%27HBZ%27,%20%27HBA1%27,%20%27HBA2%27%20,%27HBE1%27%20,%27HBG1%27%20,%27HBG2%27%20,%27HBQ1%27%20,%27HBAP1%27%20,%27HBBP1%27%20,%27HBXP1%27)&submit=submit)
+Check the boxes for:
+- Approved symbol
+- Approved name
+- Previous symbols
+- Alias symbols
+- Ensembl gene ID boxes
 
 The genenames set from all the chromosomes with the above columns is currently 2.8M
  and can be obtained using curl.
 ```sh
 curl 'https://www.genenames.org/cgi-bin/download/custom?col=gd_app_sym&col=gd_app_name&col=gd_prev_sym&col=gd_aliases&col=gd_pub_ensembl_id&status=Approved&order_by=gd_app_sym_sort&format=text&submit=submit' > hgcn_custom_results.txt
 ```
+
+A smaller subset was used for the chr11 vignette to test the pipeline.
+It used a few genes from chr11.
+In advanced filtering section, use the following "where clause" in the text box to cut down on the number of results to illustrate this example.
+```
+gd_app_sym IN ('HBB', 'HBD', 'HBM', 'HBZ', 'HBA1', 'HBA2' ,'HBE1' ,'HBG1' ,'HBG2' ,'HBQ1' ,'HBAP1' ,'HBBP1' ,'HBXP1')
+```
+Here is the smaller subset query [url encoded](https://www.genenames.org/cgi-bin/download/custom?col=gd_app_sym&col=gd_app_name&col=gd_prev_sym&col=gd_aliases&col=gd_pub_ensembl_id&status=Approved&order_by=gd_app_sym_sort&format=text&where=gd_app_sym%20IN%20(%27HBB%27,%20%27HBD%27,%20%27HBM%27,%20%27HBZ%27,%20%27HBA1%27,%20%27HBA2%27%20,%27HBE1%27%20,%27HBG1%27%20,%27HBG2%27%20,%27HBQ1%27%20,%27HBAP1%27%20,%27HBBP1%27%20,%27HBXP1%27)&submit=submit)
 
 Tab delim results
 ```tab
@@ -99,3 +105,6 @@ This file serves as the source list of genes to collate the other data
 GEN_URL=ftp://ftp.ebi.ac.uk/pub/databases/gencode/Gencode_human/release_38/gencode.v38.annotation.gtf.gz
 curl ${GEN_URL} > gencode.v38.annotation.gtf.gz
 ```
+
+This same can be accessed on their webpage.
+GTF format comprehensive gene annotations for CHR region from [gencode](https://www.gencodegenes.org/human/)
