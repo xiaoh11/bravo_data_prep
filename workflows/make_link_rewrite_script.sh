@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+# Find all links under LN_SRC that are currently targeting TARGET_DIR, and rewrite using sed. 
+#
 # Create a bespoke rewriting script for links in a directory (LN_SRC) that currently target
 #   files in another diretory (TARGET_DIR). Rewrite links according to sed expression (SUBST)
 #
@@ -10,7 +12,7 @@
 
 LN_SRC="/current/path/to/workflows/coverage/result/vep_ok"
 TARGET_DIR="/old/path/to/workflows"
-SUBST="s/old/current/"
+SUBST="s/sequences_freeze8/sequences/"
 
 # Make array of all links in LN_SRC that point anywhere into problematic TARGET_DIR
 OLDIFS=${IFS}
