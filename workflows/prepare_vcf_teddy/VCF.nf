@@ -1,40 +1,64 @@
-vcfs = Channel.fromPath(params.vcfs_path)
+/*
+  Generate samples file when not provided
+*/
+if(params.samples_path != 'NO_FILE') {
+  samples_file_chan = Channel.fromPath(params.samples_file)
+} 
 
+process generate_samples_file {
+  input:
+  // Assume all samples are present in the first VCF
+  tuple val(id), file(vcf), file(idx) from Channel.fromFilePairs(params.vcfs_glob, flat: true).first()
+
+  output:
+  file("samples.txt") into samples_file_chan
+
+  when: 
+  params.samples_path == 'NO_FILE'
+
+  script:
+  """
+  bcftools query -l $vcf > samples.txt
+  """
+}
 
 process aggregate {
-   input:
-   file vcf from vcfs
-   each file(samples) from Channel.fromPath(params.samples_path)
+  input:
+  tuple val(id), file(vcf), file(idx) from Channel.fromFilePairs(params.vcfs_glob, flat: true)
 
-   output:
-   set stdout, file("${vcf.baseName}.aggr.gz") into aggregated
+  // Use a value channel for the samples file so it can be read unlimited times.
+  file samples_file from samples_file_chan
 
-   publishDir "results/aggr", pattern: "*.aggr.gz"
+  output:
+  tuple stdout, file("${vcf.baseName}.aggr.gz") into aggregated
 
-   """
-   ${params.aggregate} -i ${vcf} -s ${samples} -f ${params.qc_metrics} -o ${vcf.baseName}.aggr.gz > ${vcf.baseName}.log
-   tabix ${vcf.baseName}.aggr.gz > tabix.log
-   tabix -l ${vcf.baseName}.aggr.gz > chromosomes.txt
-   if [[ \$(wc -l <chromosomes.txt) -gt 1 ]]; then
-      echo "Multiple chromosomes within one input file are not allowed." 1>&2
-      exit 1
-   elif [[ \$(wc -l <chromosomes.txt) -eq 0  ]]; then
-      printf "empty"
-   fi
-   printf "`head -n1 chromosomes.txt`"
-   """
+  publishDir "results/aggr", pattern: "*.aggr.gz"
+
+  script:
+  """
+  ${params.aggregate} -i ${vcf} -s ${samples} -f ${params.qc_metrics} -o ${vcf.baseName}.aggr.gz > ${vcf.baseName}.log
+  tabix ${vcf.baseName}.aggr.gz > tabix.log
+  tabix -l ${vcf.baseName}.aggr.gz > chromosomes.txt
+  if [[ \$(wc -l <chromosomes.txt) -gt 1 ]]; then
+     echo "Multiple chromosomes within one input file are not allowed." 1>&2
+     exit 1
+  elif [[ \$(wc -l <chromosomes.txt) -eq 0  ]]; then
+     printf "empty"
+  fi
+  printf "`head -n1 chromosomes.txt`"
+  """
 }
 
 
 process vep {
    input:
-   set val(chromosome), file(vcf) from aggregated
+   tuple val(chromosome), file(vcf) from aggregated
 
    when:
    chromosome != 'empty'
 
    output:
-   set val(chromosome), file("${vcf.baseName}.vep.gz"), file("${vcf.baseName}.vep.gz.tbi") into vep
+   tuple val(chromosome), file("${vcf.baseName}.vep.gz"), file("${vcf.baseName}.vep.gz.tbi") into vep
    
    publishDir "results/vep/${chromosome}", pattern: "*.vep.gz*"
 
@@ -47,10 +71,10 @@ process vep {
 
 process concat {
    input:
-   set val(chromosome), file(vcfs), file(indices) from vep.groupTuple()
+   tuple val(chromosome), file(vcfs), file(indices) from vep.groupTuple()
 
    output:
-   set val(chromosome), file("${chromosome}.aggr.vep.concat.gz"), file("${chromosome}.aggr.vep.concat.gz.tbi") into concat
+   tuple val(chromosome), file("${chromosome}.aggr.vep.concat.gz"), file("${chromosome}.aggr.vep.concat.gz.tbi") into concat
 
    publishDir "results/concat", pattern: "*.aggr.vep.concat.gz*"
  
@@ -63,20 +87,22 @@ process concat {
 
 
 process cadd {
-   input:
-   set val(chromosome), file(vcf), file(index) from concat
-   file cadds from Channel.fromPath(params.cadd.tsv_path).collect()
-   file cadds_indices from Channel.fromPath(params.cadd.tsv_path + ".tbi").collect()
+  input:
+  tuple val(chromosome), file(vcf), file(index) from concat
+  file cadds from Channel.fromPath(params.cadd.tsv_path).collect()
+  file cadds_indices from Channel.fromPath(params.cadd.tsv_path + ".tbi").collect()
 
-   output:
-   set val(chromosome), file("${vcf.baseName}.cadds.gz"), file("${vcf.baseName}.cadds.gz.tbi") into cadds
+  output:
+  tuple val(chromosome), file("${vcf.baseName}.cadds.gz"), file("${vcf.baseName}.cadds.gz.tbi") into cadds
 
-   publishDir "results/cadds", pattern: "*.cadds.gz*"
+  publishDir "results/cadds", pattern: "*.cadds.gz*"
 
-   """
-   ${params.cadd.exec} -i ${vcf} -c ${cadds} -o ${vcf.baseName}.cadds.gz
-   tabix ${vcf.baseName}.cadds.gz
-   """
+  script:
+  def script_file = file(params.cadd.script)
+  """
+  python ${script_file} -i ${vcf} -c ${cadds} -o ${vcf.baseName}.cadds.gz
+  tabix ${vcf.baseName}.cadds.gz
+  """
 }
 
 
@@ -110,13 +136,13 @@ process percentiles {
 
 process merge_vcf {
    input:
-   set val(chromosome), file(vcf), file(vcf_index) from cadds2
+   tuple val(chromosome), file(vcf), file(vcf_index) from cadds2
    val qc_metrics from Channel.from(params.percentiles.qc_metrics).toList().map { it.join(" ") }
    file variant_percentiles from variant_percentiles.collect()
    file variant_percentiles_indices from variant_percentiles_indices.collect()
 
    output:
-   set file("${chromosome}.bravo.vcf.gz"), file("${chromosome}.bravo.vcf.gz") into merged_vcf
+   tuple file("${chromosome}.bravo.vcf.gz"), file("${chromosome}.bravo.vcf.gz") into merged_vcf
 
    publishDir "results/final/vcfs", pattern: "*.bravo.vcf.gz*"
 
