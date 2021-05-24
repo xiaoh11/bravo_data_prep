@@ -9,6 +9,12 @@ Data processing workflows are written in Nextflow's DSL.
 ## External Data Sources
 See [basis\_data.md](basis_data.md) for list of external data used in load genes.
 
+### CADD Scores
+CADD scores that get added to the VCF backing data during `prepare_VCF` pipeline originate from [here](https://cadd.gs.washington.edu/)
+The pregenerated "All possible SNVs of GRCh38/hg38" provided the backing data.
+
+A pipeline to generate CADD scores locally is not in the scope of this project.
+
 ### Reference Sequence Data
 ```
 curl ftp://share.sph.umich.edu/vt/grch38/hs38DH.fa -o hs38DH.fa
