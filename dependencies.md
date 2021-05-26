@@ -7,7 +7,14 @@ or the full path to them will need to be supplied to the nextflow configs.
 Data processing workflows are written in Nextflow's DSL.
 
 ## External Data Sources
-See [basis\_data.md](basis_data.md) for list of external data used in load genes.
+
+### Basis Data
+Basis data is loaded in to backing database directly.
+- Genenames: HUGO Gene Nomenclature Commitee (HGNC)
+- Canonical Transcripts: Ensembl ID to Ensembl Transcript ID mapping
+- OMIM File: Ensemble ID to OMIM ID mapping
+- Gencode File: Source list of genes
+See [basis\_data.md](basis_data.md) for where to obtain this data.
 
 ### CADD Scores
 CADD scores that get added to the VCF backing data during `prepare_VCF` pipeline originate from [here](https://cadd.gs.washington.edu/)
@@ -25,7 +32,7 @@ curl ftp://share.sph.umich.edu/vt/grch38/hs38DH.fa.fai -o hs38DH.fa.fai
 Clone and install from [bamUtil repo](https://github.com/statgen/bamUtil)
 
 ## VEP
-Installation instructions via ensembl site.
+Installation [instructions](https://useast.ensembl.org/info/docs/tools/vep/script/vep_download.html) on ensembl.org.
 
 ## Loftee
 Master branch of [LoF plugin](https://github.com/konradjk/loftee) doesn't work for GRCh38
