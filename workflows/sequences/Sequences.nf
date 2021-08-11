@@ -150,7 +150,7 @@ process extract_sequences {
   bytes=\$((bytes * 2))
 
   {
-     bgzip -b 0 -s \${header_bytes} sample_map.tsv.gz | grep "^#";
+     bgzip -b 0 -s \${header_bytes} ${sample_map} | grep "^#";
      bgzip -b \${offset} -s \${bytes} ${sample_map} | grep "^${sample_name}\\s";
   } | bgzip -c > variants.tsv.gz
 
