@@ -38,7 +38,13 @@ HBG2	hemoglobin subunit gamma 2		HBG-T1	ENSG00000196565
 
 Headers need to be rewritten to match expected column names and the results gzipped
 ```sh
-echo -e "symbol\tname\talias_symbol\tprev_symbol\talias_symbol" > hgcn_genenames.txt
+Approved symbol
+Approved name
+Previous symbols
+Alias symbols
+Ensembl gene ID
+
+echo -e "symbol\tname\talias_symbol\tprev_symbol\tensembl_gene_id" > hgcn_genenames.txt
 tail -n +2 hgcn_custom_result.txt >> hgcn_genenames.txt
 gzip hgcn_genenames.txt
 ```
