@@ -28,3 +28,6 @@ result/
 
 # Ignore old prod config data
 crams.subset2.txt
+
+# Experiments with nextflow DSL
+workflows/experiments
