@@ -44,7 +44,8 @@ mkdir -p "${BASIS}"
 #####################
 
 mkdir -p "${RUNTIME}"/coverage
-cp -Lru "${RES_COVERAGE}"/* "${RUNTIME}"/coverage/
+cp -Lru "${RES_COVERAGE}"/bin* "${RUNTIME}"/coverage/
+cp -Lru "${RES_COVERAGE}"/full "${RUNTIME}"/coverage/
 
 mkdir -p "${RUNTIME}"/crams
 cp -Lru "${RES_SEQUENCE}"/sequences "${RUNTIME}"/crams/
@@ -53,12 +54,12 @@ cp -Lru "${RES_SEQUENCE}"/merged_variant_map.tsv.gz.tbi "${RUNTIME}"/crams/varia
 
 # Create placeholder for external data
 #  E.g hs38DH.fa and hs38DH.fa.fai
-mkdir -p "${RES_SEQUENCE}"/reference
-touch "${RES_SEQUENCE}"/reference/REF.fa.GOES_HERE
-touch "${RES_SEQUENCE}"/reference/REF.fa.fai.GOES_HERE
+mkdir -p "${RUNTIME}"/reference
+touch "${RUNTIME}"/reference/REF.fa.GOES_HERE
+touch "${RUNTIME}"/reference/REF.fa.fai.GOES_HERE
 
 # Create default API cache dir
-mkdir -p "${RES_SEQUENCE}"/cache
+mkdir -p "${RUNTIME}"/cache
 
 ###################
 # Fill Basis Data #
