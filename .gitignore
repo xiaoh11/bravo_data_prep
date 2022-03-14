@@ -1,16 +1,17 @@
-*.pyc
+# Python artifacts
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+
+# macos
 .DS_Store
+
+# IDE artifacts (should be in ~/.gitignore_global instead)
 .envrc
 .idea/
 .vscode/
-autocomplete_strings.txt
-cache_dir/
-exac*.log
-gene_cache/
-instance/
-misc/
-static/.DS_Store
-static/tablesorter-master
 
 # Ignore cmake and cget build artifacts
 CMakeCache.txt
@@ -24,9 +25,6 @@ bin/
 data/
 work/
 result/
-
-# Ignore old prod config data
-crams.subset2.txt
 
 # Experiments with nextflow DSL
 workflows/experiments
