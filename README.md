@@ -22,13 +22,13 @@ Source bcf files. Generated running the [topmed variant calling pipeline](https:
 ## Data Preparation Tools
 
 ### Compile Custom Tools
-In the `data_prep/` directory you will find tools/scripts to prepare your data for importing into Mongo database and using in BRAVO browser.
+In the `tools/` directory you will find tools/scripts to prepare your data for importing into Mongo database and using in BRAVO browser.
 
 ```sh
-cd data_prep/cpp_tools
+cd tools/cpp_tools
 cget install .
 ```
-This build executables in `data_prep/cpp_tools/cget/bin`
+This build executables in `tools/cpp_tools/cget/bin`
 
 ### External Tools
 BamUtil, VEP, and Loftee tools required are described in [dependencies.md](dependencies.md)

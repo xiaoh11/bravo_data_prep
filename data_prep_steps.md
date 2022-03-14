@@ -6,10 +6,10 @@ We recommend to process each chromosome separately in parallel. You can further 
 
 1. Compile data preparation tools:
    ```
-   cd data_prep/cpp_tools/
+   cd tools/cpp_tools/
    cget install .
    ```
-   After successful compilation, the executables will be installed in `data_prep/cpp_tools/cget/bin`.
+   After successful compilation, the executables will be installed in `tools/cpp_tools/cget/bin`.
    
 2. Preprare VCF with the INFO fields NS, AN, AC, AF, Hom, Het, DP, AVGDP, AVGDP_R, AVGGQ, AVGGQ_R, DP_HIST, DP_HIST_R, GQ_HIST, and GQ_HIST_R:
    ```

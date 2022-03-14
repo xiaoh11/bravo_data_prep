@@ -1,7 +1,6 @@
 *.pyc
 .DS_Store
 .envrc
-.gitignore
 .idea/
 .vscode/
 autocomplete_strings.txt
