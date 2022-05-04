@@ -24,8 +24,8 @@ A pipeline to generate CADD scores locally is not in the scope of this project.
 
 ### Reference Sequence Data
 ```
-curl ftp://share.sph.umich.edu/vt/grch38/hs38DH.fa -o hs38DH.fa
-curl ftp://share.sph.umich.edu/vt/grch38/hs38DH.fa.fai -o hs38DH.fa.fai
+curl ftp://share.sph.umich.edu/bravo/ref/hs38DH.fa -o hs38DH.fa
+curl ftp://share.sph.umich.edu/bravo/ref/hs38DH.fa.fai -o hs38DH.fa.fai
 ```
 
 ## BamUtil
