@@ -22,10 +22,10 @@ process pileup {
 
   script:
   """
-  ${params.samtools} view -q 20 -F 0x0704 -h ${cram} ${chromosome} |\
-    ${params.samtools} calmd -AEr - ${ref} |\
+  samtools view -q 20 -F 0x0704 -h ${cram} ${chromosome} |\
+    samtools calmd -AEr - ${ref} |\
     bam clipOverlap --in - --out - |\
-    ${params.samtools} mpileup -f ${ref} -Q 20 - |\
+    samtools mpileup -f ${ref} -Q 20 - |\
     cut -f1,2,4 | bgzip > ${chromosome}.${name}.depth.gz
   tabix -s1 -b2 -e2 ${chromosome}.${name}.depth.gz
   """
@@ -42,7 +42,7 @@ process aggregate {
 
    """
    find . -name "${chromosome}.*.depth.gz" > files_list.txt
-   ${params.aggregate} -i files_list.txt -o ${chromosome}.full.json.gz
+   aggregate.py -i files_list.txt -o ${chromosome}.full.json.gz
    """
 }
 
@@ -57,6 +57,6 @@ process prune {
    publishDir "result/bin_${limit}", pattern: "*.bin_*.json.gz*"
 
    """
-   ${params.prune} -i ${full_json} -l ${limit} -o ${chromosome}.bin_${limit}.json.gz
+   prune.py -i ${full_json} -l ${limit} -o ${chromosome}.bin_${limit}.json.gz
    """
 }
