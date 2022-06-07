@@ -1,8 +1,4 @@
-Flask
 numpy
-pymongo
 pysam
-requests[security]
-boltons
-psutil
 cget
+python-rapidjson
