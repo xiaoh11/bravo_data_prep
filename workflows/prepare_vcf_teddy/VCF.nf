@@ -8,7 +8,7 @@ if(params.samples_path != 'NO_FILE') {
 process generate_samples_file {
   input:
   // Assume all samples are present in the first VCF
-  tuple val(id), file(vcf), file(idx) from Channel.fromFilePairs(params.vcfs_glob, flat: true).first()
+  tuple val(id), file(vcf), file(idx) from Channel.fromFilePairs(params.bcfs_glob, flat: true).first()
 
   output:
   file("samples.txt") into samples_file_chan
@@ -24,7 +24,7 @@ process generate_samples_file {
 
 process aggregate {
   input:
-  tuple val(id), file(vcf), file(idx) from Channel.fromFilePairs(params.vcfs_glob, flat: true)
+  tuple val(id), file(vcf), file(idx) from Channel.fromFilePairs(params.bcfs_glob, flat: true)
 
   // Use a value channel for the samples file so it can be read unlimited times.
   file samples_file from samples_file_chan
@@ -65,6 +65,8 @@ process vep {
   """
   ${params.vep.exec} -i ${vcf} -o ${vcf.baseName}.vep.gz --format vcf --cache \
     --offline --vcf --compress_output bgzip --no_stats \
+    --fasta ${params.vep.ref_fasta} \
+    --dir_cache ${params.vep.cache} \
     --dir_plugins ${params.vep.loftee_path} \
     --plugin LoF,loftee_path:${params.vep.loftee_path},human_ancestor_fa:${params.vep.loftee_human_ancestor_fa},conservation_file:${params.vep.loftee_conservation_file},gerp_bigwig:${params.vep.loftee_gerp_bigwig} ${params.vep.flags}
   tabix ${vcf.baseName}.vep.gz
@@ -106,7 +108,7 @@ process cadd {
   def script_file = file(params.cadd.script)
   """
   python ${script_file} -i ${vcf} -c ${cadds} -o ${vcf.baseName}.cadds.gz
-  tabix ${vcf.baseName}.cadds.gz
+  tabix -f ${vcf.baseName}.cadds.gz
   """
 }
 
@@ -158,9 +160,9 @@ process merge_vcf {
   for qc_metric in ${qc_metrics}; do
      bcftools annotate -a \${qc_metric}.variant_percentile.vcf.gz -c INFO/\${qc_metric}_PCTL temp.vcf.gz -Oz -o ${chromosome}.bravo.vcf.gz
      cp ${chromosome}.bravo.vcf.gz temp.vcf.gz
-     tabix temp.vcf.gz
+     tabix -f temp.vcf.gz
   done
-  tabix ${chromosome}.bravo.vcf.gz
+  tabix -f ${chromosome}.bravo.vcf.gz
   rm temp.vcf.gz*
   """
 }

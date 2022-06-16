@@ -2,7 +2,7 @@
   
   Samples file channel: file with New_ID\tOld_ID 
     Should be a value channel to permit indefinite re-use.
-    Either generated from list of cramps
+    Either generated from list of crams or provided as text file.
 
   Samples info channel:  new_id, old_id, cram, crai
     Either generated from list of crams or parsed from provided samples file.
@@ -30,7 +30,7 @@ if(params.samples_path == 'NO_FILE') {
 
 process dbg_report {
   input:
-  file vcf from Channel.fromPath(params.vcfs_path)
+  file vcf from Channel.fromPath(params.bcfs_path)
   file samples_file from samples_file_chan
 
   output:
@@ -49,9 +49,9 @@ process variants_by_sample {
   //scratch true
 
   input:
-  file vcf from Channel.fromPath("${params.vcfs_path}")
+  file vcf from Channel.fromPath("${params.bcfs_path}")
   // Included to generate symlinks to index files.
-  file csi from Channel.fromPath("${params.vcfs_path}.csi")
+  file csi from Channel.fromPath("${params.bcfs_path}.csi")
   file samples_file from samples_file_chan
 
   output:
