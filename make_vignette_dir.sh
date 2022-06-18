@@ -27,6 +27,10 @@ TOP_DIR="${1:-./data}"
 # Assume workflows directory is in working dir.
 WORKFLOWS="./workflows"
 
+# Default to Reference locations on cluster for populationg ref data
+BASIS_SRC_DIR="${BASIS_SRC_DIR:-/apps/reference/api}"
+REF_SRC_DIR="${REF_SRC_DIR:-/apps/reference}"
+
 # Result directories
 RES_COVERAGE="${WORKFLOWS}"/coverage/result 
 RES_SEQUENCE="${WORKFLOWS}"/sequences/result
@@ -52,14 +56,20 @@ cp -Lru "${RES_SEQUENCE}"/sequences "${RUNTIME}"/crams/
 cp -Lru "${RES_SEQUENCE}"/merged_variant_map.tsv.gz "${RUNTIME}"/crams/variant_map.tsv.gz
 cp -Lru "${RES_SEQUENCE}"/merged_variant_map.tsv.gz.tbi "${RUNTIME}"/crams/variant_map.tsv.gz.tbi
 
-# Create placeholder for external data
-#  E.g hs38DH.fa and hs38DH.fa.fai
-mkdir -p "${RUNTIME}"/reference
-touch "${RUNTIME}"/reference/REF.fa.GOES_HERE
-touch "${RUNTIME}"/reference/REF.fa.fai.GOES_HERE
-
 # Create default API cache dir
 mkdir -p "${RUNTIME}"/cache
+
+mkdir -p "${RUNTIME}"/reference
+
+# If REF_SRC_DIR is present, copy reference data under runtime directory
+if [ -d ${REF_SRC_DIR} ]; then
+  cp "${REF_SRC_DIR}"/hs38DH.fa     "${RUNTIME}"/reference/hs38DH.fa
+  cp "${REF_SRC_DIR}"/hs38DH.fa.fai "${RUNTIME}"/reference/hs38DH.fa.fai
+else
+# Create placeholder for hs38DH reference
+  touch "${RUNTIME}"/reference/hs38DH.fa.GOES_HERE
+  touch "${RUNTIME}"/reference/hs38DH.fa.fai.GOES_HERE
+fi
 
 ###################
 # Fill Basis Data #
@@ -71,9 +81,18 @@ cp -Lru "${RES_PREP_VCF}"/final/vcfs/* "${BASIS}"/vcfs
 mkdir -p "${BASIS}"/qc_metrics
 cp -Lru "${RES_PREP_VCF}"/final/qc_metrics/metrics.json.gz "${BASIS}"/qc_metrics/metrics.json.gz
 
-# Create placeholders for external data
 mkdir -p "${BASIS}"/reference
-touch "${BASIS}/reference/canonical_transcripts.tsv.gz.GOES_HERE"
-touch "${BASIS}/reference/hgcn_genenames.tsv.gz.GOES_HERE"
-touch "${BASIS}/reference/omim_ensembl_refs.tsv.gz.GOES_HERE"
-touch "${BASIS}/reference/gencode_annotation.gtf.gz.GOES_HERE"
+
+# If BASIS_SRC_DIR is present, copy reference data under basis directory
+if [ -d ${BASIS_SRC_DIR} ]; then
+  cp "${BASIS_SRC_DIR}/canonical_transcripts.tsv.gz" "${BASIS}/reference/canonical_transcripts.tsv.gz"
+  cp "${BASIS_SRC_DIR}/hgcn_genenames.tsv.gz"        "${BASIS}/reference/hgcn_genenames.tsv.gz"
+  cp "${BASIS_SRC_DIR}/omim_ensembl_refs.tsv.gz"     "${BASIS}/reference/omim_ensembl_refs.tsv.gz"
+  cp "${BASIS_SRC_DIR}/gencode_annotation.gtf.gz"    "${BASIS}/reference/gencode_annotation.gtf.gz"
+else
+# Otherwise Create placeholders for external data
+  touch "${BASIS}/reference/canonical_transcripts.tsv.gz.GOES_HERE"
+  touch "${BASIS}/reference/hgcn_genenames.tsv.gz.GOES_HERE"
+  touch "${BASIS}/reference/omim_ensembl_refs.tsv.gz.GOES_HERE"
+  touch "${BASIS}/reference/gencode_annotation.gtf.gz.GOES_HERE"
+fi
