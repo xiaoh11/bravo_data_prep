@@ -88,7 +88,7 @@ if [ -d ${BASIS_SRC_DIR} ]; then
   cp "${BASIS_SRC_DIR}/canonical_transcripts.tsv.gz" "${BASIS}/reference/canonical_transcripts.tsv.gz"
   cp "${BASIS_SRC_DIR}/hgcn_genenames.tsv.gz"        "${BASIS}/reference/hgcn_genenames.tsv.gz"
   cp "${BASIS_SRC_DIR}/omim_ensembl_refs.tsv.gz"     "${BASIS}/reference/omim_ensembl_refs.tsv.gz"
-  cp "${BASIS_SRC_DIR}/gencode_annotation.gtf.gz"    "${BASIS}/reference/gencode_annotation.gtf.gz"
+  cp "${BASIS_SRC_DIR}/gencode.v38.annotation.gtf.gz"    "${BASIS}/reference/gencode.v38.annotation.gtf.gz"
 else
 # Otherwise Create placeholders for external data
   touch "${BASIS}/reference/canonical_transcripts.tsv.gz.GOES_HERE"
