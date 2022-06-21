@@ -4,7 +4,6 @@ chromosome               = params.chromosome
 vcfs                     = params.vcfs
 samples                  = params.samples
 window_size              = params.window_size_bp
-counts_exec              = params.counts_exec
 add_cadd_script          = params.add_cadd_script
 vep                      = params.vep
 loftee_path              = params.loftee_path
@@ -40,7 +39,8 @@ process compute {
   def samples_opt = samples_file.name == 'NO_FILE' ?  "" : "-s $samples_file"
 
   """
-  ${counts_exec} -i ${vcf} ${samples_opt} -r ${chromosome}:${window_start}-${window_stop} -o region_summary.vcf.gz > log.txt
+  ComputeAlleleCountsAndHistograms -i ${vcf} ${samples_opt} \
+    -r ${chromosome}:${window_start}-${window_stop} -o region_summary.vcf.gz > log.txt
   tabix region_summary.vcf.gz
   n_variants=`gzip -dc region_summary.vcf.gz | grep -v "#" | wc -l`
   region_start=`gzip -dc region_summary.vcf.gz | grep -v "#" | head -n1 | cut -f2`
@@ -69,7 +69,13 @@ process vep {
    """
    cp ${vcf} ${region_chromosome}_${region_start}_${region_stop}.vcf.gz
    cp ${tbi} ${region_chromosome}_${region_start}_${region_stop}.vcf.gz.tbi
-   ${vep} -i ${vcf} -o ${region_chromosome}_${region_start}_${region_stop}.vep_ok.vcf.gz --format vcf --cache --offline --vcf --compress_output bgzip --no_stats --dir_plugins ${loftee_path} --plugin LoF,loftee_path:${loftee_path},human_ancestor_fa:${loftee_human_ancestor_fa},conservation_file:${loftee_conservation_file},gerp_bigwig:${loftee_gerp_bigwig} ${loftee_flags}
+   ${vep} -i ${vcf} -o ${region_chromosome}_${region_start}_${region_stop}.vep_ok.vcf.gz \
+     --format vcf --cache \
+     --offline --vcf --compress_output bgzip --no_stats \
+     --fasta ${params.ref_fasta} \
+     --dir_cache ${params.vep_cache} \
+     --dir_plugins ${loftee_path} \
+     --plugin LoF,loftee_path:${loftee_path},human_ancestor_fa:${loftee_human_ancestor_fa},conservation_file:${loftee_conservation_file},gerp_bigwig:${loftee_gerp_bigwig} ${loftee_flags}
    tabix ${region_chromosome}_${region_start}_${region_stop}.vep_ok.vcf.gz
    """
 }

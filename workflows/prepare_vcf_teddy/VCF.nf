@@ -36,15 +36,19 @@ process aggregate {
 
   script:
   """
-  ${params.aggregate} -i ${vcf} -s ${samples_file} -f ${params.qc_metrics} -o ${vcf.baseName}.aggr.gz > ${vcf.baseName}.log
+  ComputeAlleleCountsAndHistograms -i ${vcf} -s ${samples_file} -f ${params.qc_metrics} \
+    -o ${vcf.baseName}.aggr.gz > ${vcf.baseName}.log
+
   tabix ${vcf.baseName}.aggr.gz > tabix.log
   tabix -l ${vcf.baseName}.aggr.gz > chromosomes.txt
+
   if [[ \$(wc -l <chromosomes.txt) -gt 1 ]]; then
      echo "Multiple chromosomes within one input file are not allowed." 1>&2
      exit 1
   elif [[ \$(wc -l <chromosomes.txt) -eq 0  ]]; then
      printf "empty"
   fi
+
   printf "`head -n1 chromosomes.txt`"
   """
 }
@@ -63,7 +67,7 @@ process vep {
   publishDir "result/vep/${chromosome}", pattern: "*.vep.gz*"
 
   """
-  ${params.vep.exec} -i ${vcf} -o ${vcf.baseName}.vep.gz --format vcf --cache \
+  vep -i ${vcf} -o ${vcf.baseName}.vep.gz --format vcf --cache \
     --offline --vcf --compress_output bgzip --no_stats \
     --fasta ${params.vep.ref_fasta} \
     --dir_cache ${params.vep.cache} \
@@ -132,10 +136,10 @@ process percentiles {
 
   """
   if [[ "${qc_metric}" = "QUAL" ]]; then
-     ${params.percentiles.exec} -t 4 -i ${vcfs} -p 10 -o ${qc_metric}
+     ComputePercentiles -t 4 -i ${vcfs} -p 10 -o ${qc_metric}
   else
      message=`bcftools view -h ${vcfs[0]} | grep 'INFO=<ID=${qc_metric}' | grep -oP 'Description="\\K.+(?=")'`
-     ${params.percentiles.exec} -t 4 -i ${vcfs} -p 10 -m ${qc_metric} -d \"\${message}\" -o ${qc_metric}
+     ComputePercentiles -t 4 -i ${vcfs} -p 10 -m ${qc_metric} -d \"\${message}\" -o ${qc_metric}
   fi
   tabix ${qc_metric}.variant_percentile.vcf.gz
   """
@@ -156,13 +160,13 @@ process merge_vcf {
 
   """
   cp ${vcf} temp.vcf.gz
-  tabix temp.vcf.gz
+  tabix -f temp.vcf.gz
   for qc_metric in ${qc_metrics}; do
      bcftools annotate -a \${qc_metric}.variant_percentile.vcf.gz -c INFO/\${qc_metric}_PCTL temp.vcf.gz -Oz -o ${chromosome}.bravo.vcf.gz
      cp ${chromosome}.bravo.vcf.gz temp.vcf.gz
      tabix -f temp.vcf.gz
   done
-  tabix -f ${chromosome}.bravo.vcf.gz
+  tabix ${chromosome}.bravo.vcf.gz
   rm temp.vcf.gz*
   """
 }
