@@ -41,32 +41,20 @@ In the `workflows/` directory are three Nextflow configs and scripts used to pre
 
 Details about the steps of the pipeline are detailed in [data\_prep\_steps.md](data_prep_steps.md).
 
-## Data Directory Contents Setup
+The three nextflow pipelines are:
+1. Prepare VCF Teddy
+2. Sequences
+3. Coverage
+
+## Downstream data for BRAVO API
+The `make_vignette_dir.sh` script consolidates the results from the nextflow scripts into a data directory organized for the BRAVO API.
+It is designed for small data sets, and should be run after the three data pipelines complete.
 
 There are two data sets that Bravo API needs to run:
-- *Backing Data* are flat files on disk read at runtime.
+- *Runtime Data* are flat files on disk read at runtime.
 - *Basis Data* files processed and loaded into mongo db.
 
-We consolidate the results from the nextflow scripts into a single data directory.
-It powers the BRAVO API.
-It contains all the runtime data on disk as well as the basis data that gets processed into the mongo db.
-
-- `reference/` holds the refercence fasta files for the genome
-- API's `SEQUENCE_DIR` config val is asking for directory that contains the 'sequences' directory.
-  - sequences dirname is hardcoded
-  - `variant_map.tsv.gz` file name is hardcoded.
-  - `variant_map.tsv.gz.tbi` file name is hardcoded.
-- Under sequence/, directory structure and filenames are perscribed.
-  - All two hex character directories 00 to ff should exist as subdirectories.
-  - cram files must have the filename in the exact form of `sample_id.cram`
-  - The sub dir a cram belongs in is the first two characters of the md5 hexdigest of the sample_id.
-    - E.g. foobar123.cram would be in directory "ae"
-        ```python
-        hashlib.md5("foobar123".encode()).hexdigest()[:2]
-        ```
-- coverage directory contents are taken from result/ dir of coverage workflow
-- `variant_map.tsv.gz` is an output of `RandomHetHom3`
-    
+### Downstream data subdirectory notes
 
 ```sh
 data/
@@ -85,3 +73,21 @@ data/
     ├── hs38DH.fa
     └── hs38DH.fa.fai
 ```
+
+- `reference/` holds the refercence fasta files for the genome
+- API's `SEQUENCE_DIR` config val is asking for directory that contains the 'sequences' directory.
+  - sequences dirname is hardcoded
+  - `variant_map.tsv.gz` file name is hardcoded.
+  - `variant_map.tsv.gz.tbi` file name is hardcoded.
+- Under sequence/, directory structure and filenames are perscribed.
+  - All two hex character directories 00 to ff should exist as subdirectories.
+  - cram files must have the filename in the exact form of `sample_id.cram`
+  - The sub dir a cram belongs in is the first two characters of the md5 hexdigest of the sample_id.
+    - E.g. foobar123.cram would be in directory "ae"
+        ```python
+        hashlib.md5("foobar123".encode()).hexdigest()[:2]
+        ```
+    - This dir structure is produced by the nextflow pipeline
+- coverage directory contents are taken from result/ dir of coverage workflow
+- `variant_map.tsv.gz` is an output of `RandomHetHom3`
+    
