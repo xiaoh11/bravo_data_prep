@@ -6,7 +6,7 @@
 OUT_DIR=~/bravo-data-subset
 
 SRC_BCF=/mnt/vcfs/freeze10/genotypes/merged/chr11/merged.chr11_5200001_5300000.genotypes.bcf
-OUT_BCF=${OUT_DIR}/chr11_subset.bcf
+OUT_BCF=${OUT_DIR}/chr11.subset.full.bcf
 INTERMEDIATE_BASE=${OUT_DIR}/chr11
 
 # Make output directory
@@ -25,7 +25,7 @@ for INFILE in "${ARR[@]}"
 do
   echo "${INFILE}"
 
-  OUTPATH="${INTERMEDIATE_BASE}_${COUNTER}.bcf"
+  OUTPATH="${INTERMEDIATE_BASE}.part${COUNTER}.bcf"
 
   # Subset the bcf file
   bcftools view ${INFILE}\
@@ -41,10 +41,10 @@ done
 
 # Consolidate intermediates
 bcftools concat -n -o ${OUT_BCF} --output-type b \
-  ${INTERMEDIATE_BASE}_0.bcf \
-  ${INTERMEDIATE_BASE}_1.bcf \
-  ${INTERMEDIATE_BASE}_2.bcf \
-  ${INTERMEDIATE_BASE}_3.bcf
+  "${INTERMEDIATE_BASE}.part0.bcf" \
+  "${INTERMEDIATE_BASE}.part1.bcf" \
+  "${INTERMEDIATE_BASE}.part2.bcf" \
+  "${INTERMEDIATE_BASE}.part3.bcf" 
 
 # Index the subset file
 bcftools index ${OUT_BCF} --threads 1
