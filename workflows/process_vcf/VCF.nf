@@ -74,10 +74,10 @@ process annotate_bcfs {
     --output-type b \
     --columns ${params.anno_fields} \
     --output ${out_bcf} \
-    ${bcf} 
-  
+    ${bcf}
+
   # Index resulting file
-  tabix --csi -f ${out_bcf} 
+  tabix --csi -f ${out_bcf}
   """
 }
 
@@ -95,8 +95,8 @@ process vep {
 
   script:
   outfile = "${bcf.baseName}.vep.gz"
-  plugin_opts = ["LoF", 
-                 "loftee_path:${params.vep.loftee_path}", 
+  plugin_opts = ["LoF",
+                 "loftee_path:${params.vep.loftee_path}",
                  "human_ancestor_fa:${params.vep.loftee_human_ancestor_fa}",
                  "conservation_file:${params.vep.loftee_conservation_file}",
                  "gerp_bigwig:${params.vep.loftee_gerp_bigwig}"
@@ -192,13 +192,16 @@ process merge_vcf {
 
   """
   cp ${vcf} temp.vcf.gz
-  tabix -f temp.vcf.gz
+  tabix -f --csi temp.vcf.gz
   for qc_metric in ${qc_metrics}; do
-     bcftools annotate -a \${qc_metric}.variant_percentile.vcf.gz -c INFO/\${qc_metric}_PCTL temp.vcf.gz -Oz -o ${chromosome}.bravo.vcf.gz
+     bcftools annotate -a \${qc_metric}.variant_percentile.vcf.gz \
+       -c INFO/\${qc_metric}_PCTL \
+       -Oz -o ${chromosome}.bravo.vcf.gz \
+       temp.vcf.gz
      cp ${chromosome}.bravo.vcf.gz temp.vcf.gz
-     tabix -f temp.vcf.gz
+     tabix -f --csi temp.vcf.gz
   done
-  tabix ${chromosome}.bravo.vcf.gz
+  tabix -f --csi ${chromosome}.bravo.vcf.gz
   rm temp.vcf.gz*
   """
 }
