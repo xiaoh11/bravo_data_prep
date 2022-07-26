@@ -34,7 +34,7 @@ REF_SRC_DIR="${REF_SRC_DIR:-/apps/reference}"
 # Result directories
 RES_COVERAGE="${WORKFLOWS}"/coverage/result 
 RES_SEQUENCE="${WORKFLOWS}"/sequences/result
-RES_PREP_VCF="${WORKFLOWS}"/prepare_vcf_teddy/result
+RES_PREP_VCF="${WORKFLOWS}"/process_vcf/result
 
 # Create directory structure.
 RUNTIME="${TOP_DIR}"/runtime
