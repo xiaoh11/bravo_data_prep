@@ -1,79 +1,116 @@
 /*
-  Generate samples file when not provided
+  Use samples file if provided.
 */
 if(params.samples_path != 'NO_FILE') {
   samples_file_chan = Channel.fromPath(params.samples_file)
 }
 
+/*
+  Generate samples file when NO_FILE is specified.
+*/
 process generate_samples_file {
   input:
   // Assume all samples are present in the first VCF
-  tuple val(id), file(vcf), file(idx) from Channel.fromFilePairs(params.bcfs_glob, flat: true).first()
+  tuple val(id), file(bcf), file(idx) from Channel.fromFilePairs(params.bcfs_full, flat: true).first()
 
   output:
   file("samples.txt") into samples_file_chan
+
 
   when:
   params.samples_path == 'NO_FILE'
 
   script:
   """
-  bcftools query -l $vcf > samples.txt
+  bcftools query -l $bcf > samples.txt
   """
 }
 
-process aggregate {
+/*
+  Calculate depth histograms from full BCFs.
+    Apply filter to input file pairs to exclude M and Y chromosomes.
+*/
+process calc_histograms {
   input:
-  tuple val(id), file(vcf), file(idx) from Channel.fromFilePairs(params.bcfs_glob, flat: true)
+  tuple val(id), file(bcf), file(idx) from Channel
+    .fromFilePairs(params.bcfs_full, flat: true)
 
   // Use a value channel for the samples file so it can be read unlimited times.
   file samples_file from samples_file_chan
 
   output:
-  tuple stdout, file("${vcf.baseName}.aggr.gz") into aggregated
-
-  publishDir "result/aggr", pattern: "*.aggr.gz"
+  tuple chr_str, file("${bcf.baseName}.hist.bcf"), file("${bcf.baseName}.hist.bcf.csi") into histogramed
 
   script:
+  chr_patt = 'chr[1-9X]\\{1,2\\}'
+  chr_str = (bcf.baseName =~ /chr[1-9X]{1,2}/)[0]
+  outfile = "${bcf.baseName}.hist.bcf"
+
   """
-  ComputeAlleleCountsAndHistograms -i ${vcf} -s ${samples_file} -f ${params.qc_metrics} \
-    -o ${vcf.baseName}.aggr.gz > ${vcf.baseName}.log
+  ComputeAlleleCountsAndHistograms -i ${bcf} -s ${samples_file} \
+    -o ${outfile} > ${bcf.baseName}.hist.log
 
-  tabix ${vcf.baseName}.aggr.gz > tabix.log
-  tabix -l ${vcf.baseName}.aggr.gz > chromosomes.txt
-
-  if [[ \$(wc -l <chromosomes.txt) -gt 1 ]]; then
-     echo "Multiple chromosomes within one input file are not allowed." 1>&2
-     exit 1
-  elif [[ \$(wc -l <chromosomes.txt) -eq 0  ]]; then
-     printf "empty"
-  fi
-
-  printf "`head -n1 chromosomes.txt`"
+  tabix --csi -f ${outfile} > tabix.log
   """
 }
 
+/*
+  Annotate INFO from sites only vcfs into histogram vcfs
+*/
+process annotate_bcfs {
+  input:
+  tuple val(chr), file(bcf), file(idx) from histogramed
+  path(sites_dir) from Channel.fromPath(params.bcfs_sites_dir).first()
+
+  output:
+  tuple val(chr), file("${bcf.baseName}.anno.bcf"), file("${bcf.baseName}.anno.bcf.csi") into annotated
+
+  script:
+  out_bcf = "${bcf.baseName}.anno.bcf"
+  out_idx = "${bcf.baseName}.anno.bcf.csi"
+  sites_bcf = "${sites_dir}/freeze10.topmed.${chr}.filtered.sites.bcf"
+  """
+  bcftools annotate -a ${sites_bcf} \
+    --output-type b \
+    --columns ${params.anno_fields} \
+    --output ${out_bcf} \
+    ${bcf} 
+  
+  # Index resulting file
+  tabix --csi -f ${out_bcf} 
+  """
+}
 
 process vep {
+  publishDir "result/vep/${chromosome}", pattern: "*.vep.gz*"
+
   input:
-  tuple val(chromosome), file(vcf) from aggregated
+  tuple val(chromosome), file(bcf), file(idx) from annotated
 
   when:
   chromosome != 'empty'
 
   output:
-  tuple val(chromosome), file("${vcf.baseName}.vep.gz"), file("${vcf.baseName}.vep.gz.tbi") into vep
+  tuple val(chromosome), file("${bcf.baseName}.vep.gz"), file("${bcf.baseName}.vep.gz.csi") into vep
 
-  publishDir "result/vep/${chromosome}", pattern: "*.vep.gz*"
-
+  script:
+  outfile = "${bcf.baseName}.vep.gz"
+  plugin_opts = ["LoF", 
+                 "loftee_path:${params.vep.loftee_path}", 
+                 "human_ancestor_fa:${params.vep.loftee_human_ancestor_fa}",
+                 "conservation_file:${params.vep.loftee_conservation_file}",
+                 "gerp_bigwig:${params.vep.loftee_gerp_bigwig}"
+                ].join(",")
   """
-  vep -i ${vcf} -o ${vcf.baseName}.vep.gz --format vcf --cache \
-    --offline --vcf --compress_output bgzip --no_stats \
+  bcftools view ${bcf} |\
+  vep -o ${outfile} \
     --fasta ${params.vep.ref_fasta} \
     --dir_cache ${params.vep.cache} \
     --dir_plugins ${params.vep.loftee_path} \
-    --plugin LoF,loftee_path:${params.vep.loftee_path},human_ancestor_fa:${params.vep.loftee_human_ancestor_fa},conservation_file:${params.vep.loftee_conservation_file},gerp_bigwig:${params.vep.loftee_gerp_bigwig} ${params.vep.flags}
-  tabix ${vcf.baseName}.vep.gz
+    --plugin ${plugin_opts} \
+    ${params.vep.static_flags}
+
+  tabix -f --csi ${outfile}
   """
 }
 
@@ -83,14 +120,14 @@ process concat {
   tuple val(chromosome), file(vcfs), file(indices) from vep.groupTuple()
 
   output:
-  tuple val(chromosome), file("${chromosome}.aggr.vep.concat.gz"), file("${chromosome}.aggr.vep.concat.gz.tbi") into concat
+  tuple val(chromosome), file("${chromosome}.aggr.vep.concat.gz"), file("${chromosome}.aggr.vep.concat.gz.csi") into concat
 
   publishDir "result/concat", pattern: "*.aggr.vep.concat.gz*"
 
   """
   find . -name "*.vep.gz" > files_list.txt
   bcftools concat -a -f files_list.txt -Oz -o ${chromosome}.aggr.vep.concat.gz
-  tabix ${chromosome}.aggr.vep.concat.gz
+  tabix -f --csi ${chromosome}.aggr.vep.concat.gz
   """
 }
 
@@ -104,7 +141,7 @@ process cadd {
   output:
   tuple val(chromosome),
         file("${vcf.baseName}.cadds.gz"),
-        file("${vcf.baseName}.cadds.gz.tbi") into(cadds1, cadds2)
+        file("${vcf.baseName}.cadds.gz.csi") into(cadds1, cadds2)
 
   publishDir "result/cadds", pattern: "*.cadds.gz*"
 
@@ -112,14 +149,9 @@ process cadd {
   def script_file = file(params.cadd.script)
   """
   python ${script_file} -i ${vcf} -c ${cadds} -o ${vcf.baseName}.cadds.gz
-  tabix -f ${vcf.baseName}.cadds.gz
+  tabix -f --csi ${vcf.baseName}.cadds.gz
   """
 }
-
-
-// Duplicate channel
-//(cadds1, cadds2) = cadds.into(2)
-
 
 process percentiles {
   input:
@@ -128,7 +160,7 @@ process percentiles {
 
   output:
   file "${qc_metric}.variant_percentile.vcf.gz" into variant_percentiles
-  file "${qc_metric}.variant_percentile.vcf.gz.tbi" into variant_percentiles_indices
+  file "${qc_metric}.variant_percentile.vcf.gz.csi" into variant_percentiles_indices
   file "${qc_metric}.all_percentiles.json.gz" into metric_summaries
 
   publishDir "result/percentiles", pattern: "*.variant_percentile.vcf.gz*"
@@ -141,7 +173,7 @@ process percentiles {
      message=`bcftools view -h ${vcfs[0]} | grep 'INFO=<ID=${qc_metric}' | grep -oP 'Description="\\K.+(?=")'`
      ComputePercentiles -t 4 -i ${vcfs} -p 10 -m ${qc_metric} -d \"\${message}\" -o ${qc_metric}
   fi
-  tabix ${qc_metric}.variant_percentile.vcf.gz
+  tabix -f --csi ${qc_metric}.variant_percentile.vcf.gz
   """
 }
 
