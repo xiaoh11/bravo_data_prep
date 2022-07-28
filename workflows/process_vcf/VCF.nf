@@ -1,11 +1,4 @@
 /*
-  Use samples file if provided.
-*/
-if(params.samples_path != 'NO_FILE') {
-  samples_file_chan = Channel.fromPath(params.samples_file)
-}
-
-/*
   Generate samples file when NO_FILE is specified.
 */
 process generate_samples_file {
@@ -15,7 +8,6 @@ process generate_samples_file {
 
   output:
   file("samples.txt") into samples_file_chan
-
 
   when:
   params.samples_path == 'NO_FILE'
@@ -27,6 +19,14 @@ process generate_samples_file {
 }
 
 /*
+  Use samples file if provided.
+*/
+if(params.samples_path != 'NO_FILE') {
+  samples_file_chan = Channel.fromPath(params.samples_path)
+}
+
+
+/*
   Calculate depth histograms from full BCFs.
     Apply filter to input file pairs to exclude M and Y chromosomes.
 */
@@ -36,7 +36,7 @@ process calc_histograms {
     .fromFilePairs(params.bcfs_full, flat: true)
 
   // Use a value channel for the samples file so it can be read unlimited times.
-  file samples_file from samples_file_chan
+  file samples_file from samples_file_chan.first()
 
   output:
   tuple chr_str, file("${bcf.baseName}.hist.bcf"), file("${bcf.baseName}.hist.bcf.csi") into histogramed
