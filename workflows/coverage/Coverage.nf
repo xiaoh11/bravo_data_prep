@@ -1,4 +1,5 @@
 process pileup {
+  memory "0.75 GB"
 
   input:
   // get ID, ID.cram, and ID.cram.crai from glob of crams
@@ -32,6 +33,8 @@ process pileup {
 }
 
 process aggregate {
+   memory "6 GB"
+
    input:
    tuple val(chromosome), file(depth_files), file(depth_tbis) from pileups.groupTuple()
 
@@ -47,6 +50,8 @@ process aggregate {
 }
 
 process prune {
+   memory "4 GB"
+
    input:
    set val(chromosome), file(full_json), file(full_json_tbi) from aggregated
    each limit from Channel.from(params.prune_limits)
