@@ -1,0 +1,14 @@
+2022-08-09 15:47:13,934 25175 23113642231552 resume.py ERROR: 
+failed to add dpclust-compute-0-2*7 to slurm, 
+<HttpError 
+400 when requesting 
+  https://compute.googleapis.com/compute/beta/projects/genome-variant-server/zones/us-central1-c/instances/bulkInsert?alt=json 
+  returned "Invalid value for field 'resource.instanceProperties.networkInterfaces[0].subnetwork': 
+    'projects/genome-variant-server/regions/us-central1/subnetworks/https://www.googleapis.com/compute/v1/projects/genome-variant-server/regions/us-central1/subnetworks/bravo-slurm-subnet'.  The URL is malformed.". 
+
+Details: "
+[
+  {'message': 
+    "Invalid value for field 'resource.instanceProperties.networkInterfaces[0].subnetwork': 
+        'projects/genome-variant-server/regions/us-central1/subnetworks/https://www.googleapis.com/compute/v1/projects/genome-variant-server/regions/us-central1/subnetworks/bravo-slurm-subnet'. The URL is malformed.", 'domain': 'global', 'reason': 'invalid'}]">
+
