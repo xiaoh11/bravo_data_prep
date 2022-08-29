@@ -1,11 +1,23 @@
 process select_files {
+  input:
+  path data_dir from Channel.fromPath("data")
+
+  output:
+  stdout paths_subset
+
+  publishDir "result/dummy_select", pattern: "*.txt"
 
   script:
   // TODO: List file paths, select 100, output appropriate lists or maps to next process
-  //    params.cram_files = "data/crams/*.cram"
+  """
+  ls ${params.cram_files} |\
+     shuf -n 10 |\
+     tee selected_crams.txt
+  """
 
 }
 
+/*
 process pileup {
   input:
   // get ID, ID.cram, and ID.cram.crai from glob of crams
@@ -50,3 +62,4 @@ process aggregate {
   echo "foo" > bar.txt
   """
 }
+*/
