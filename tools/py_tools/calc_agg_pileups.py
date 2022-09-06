@@ -2,6 +2,7 @@
 
 import sys
 import json
+import argparse
 from statistics import mean, median
 
 """
@@ -18,8 +19,15 @@ chr11   61404   3;1;2;1;5
 chr11   61405   3;1;2;1;5
 """
 
+DEFAULT_N_INDIV=100
 
-def main(n_indiv=1000):
+def configure_argparse():
+    parser = argparse.ArgumentParser(description = "Aggregate compiled depth data")
+    parser.add_argument('-n', required=False, default=DEFAULT_N_INDIV,
+        type=int, help="Number of individuals in depth sample set") 
+    return(parser)
+  
+def main(n_indiv=100):
     depth_thresholds = [1, 5, 10, 15, 20, 25, 30, 50, 100]
 
     for line in sys.stdin:
@@ -52,4 +60,6 @@ def main(n_indiv=1000):
 
 
 if __name__ == '__main__':
-    main()
+    arg_parser = configure_argparse()
+    args = arg_parser.parse_args()
+    main(n_indiv = args.n)
