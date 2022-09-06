@@ -34,9 +34,12 @@ def main(n_indiv=100):
         chrom, pos, depth_str = line.rstrip().split()
         depths = [int(i) for i in depth_str.split(';')]
 
+        # Initialize tabulation data structures with zeros in case insufficient data to fill.
+        counts = [0] * len(depth_thresholds)
+        summary = {key:val for key, val in zip(depth_thresholds, counts)}
+
         # Tabulate counts for each depth threshold to answer:
         #   How many depths are greater than or equal to each threshold?
-        counts = [0] * len(depth_thresholds)
         for depth in depths:
             for idx, break_val in enumerate(depth_thresholds):
                 if depth >= break_val:
@@ -44,7 +47,6 @@ def main(n_indiv=100):
 
         chromosome_id = chrom.replace('chr', '', 1)
 
-        summary = {}
         summary["chrom"] = chromosome_id
         summary["start"] = pos
         summary["end"] = pos
