@@ -1,7 +1,5 @@
 import java.nio.file.Paths
 
-grp_size = 5
-
 process select_files {
   input:
   path data_dir from Channel.fromPath(params.cram_base_dir)
@@ -55,6 +53,12 @@ process pileup {
   tabix -s1 -b2 -e2 ${chromosome}.${name}.depth.gz
   """
 }
+
+/****************************************************************************** 
+ BEGIN Aggregation Rounds 
+  Read pileups $grp_size at a time using Miller (mlr) to compile depths at
+  each position to semicolon delimted list of depths.
+******************************************************************************/
 
 process aggregate_depths_rnd_1 {
   label "highmem"
@@ -116,8 +120,6 @@ process aggregate_depths_rnd_3 {
         file("${chromosome}_rnd_3_*.tsv.gz"),
         file("${chromosome}_rnd_3_*.tsv.gz.tbi") into agg_rnd_3
 
-  publishDir "result/agg"
-  
   script:
 
   min_pos = 0
@@ -126,4 +128,102 @@ process aggregate_depths_rnd_3 {
   result_file="${chromosome}_rnd_3_${task.index}.tsv.gz"
 
   template 'mlr_agg.sh'
+}
+
+process aggregate_depths_rnd_4 {
+  label "highmem"
+
+  input:
+  tuple val(chromosome), file(dat_file_list), file(idx_file_list) from agg_rnd_3
+    .toSortedList({ lhs, rhs -> lhs[0] <=> rhs[0] })
+    .flatMap()
+    .groupTuple(size: grp_size, remainder: true)
+
+  output:
+  tuple val(chromosome), 
+        file("${chromosome}_rnd_3_*.tsv.gz"),
+        file("${chromosome}_rnd_3_*.tsv.gz.tbi") into agg_rnd_4
+
+  publishDir "result/depth_aggregation"
+  
+  script:
+
+  min_pos = 0
+  max_pos = params.chrom_lengths[chromosome]
+  step = 1000000
+  result_file="${chromosome}_rnd_4_${task.index}.tsv.gz"
+
+  template 'mlr_agg.sh'
+}
+
+/*** END Aggregation Rounds ***************************************************/
+
+/*******************************************************************************
+ Summarize Depths
+  From aggregated depths, caluclate the start and end positions for each input 
+  file such that each will be handled in $num_chunks sequential parts.
+  Depth staticstics are tabulated on each smaller part.  Finally, part summary
+  data is concatenated back into depth statistics file covering one chromosome.
+*******************************************************************************/
+
+process prep_summarization {
+  label "anyqueue"
+
+  input:
+  tuple val(chrom), file(data_path), file(idx_path) from agg_rnd_4  
+
+  each part_num from Channel.from(1..num_chunks)
+
+  output:
+  tuple val(chrom), env(START), env(END), file(data_path), file(idx_path) into depth_chunking
+
+  script:
+  max_pos = params.chrom_lengths[chrom]
+  """
+  MIN_POS=\$(zcat $data_path | head -n 1 | cut -f2)
+
+  let "INC = 1 + (${max_pos} - MIN_POS) / ${num_chunks}"
+  let "END = MIN_POS + (INC * $part_num)"
+  let "START = 1 + END - INC"
+  """
+}
+
+process summarize_depths {
+  label "anyqueue"
+
+  input:
+  tuple val(chrom), val(start_pos), val(end_pos), file(data_file), file(idx_file) from depth_chunking
+
+  output:
+  tuple val(chrom), file("${summ_path}") into summary_parts 
+  
+  script:
+  summ_path = "${chrom}.${start_pos.padLeft(9,'0')}.summary.tsv.gz"
+  pos_range = "${chrom}:${start_pos}-${end_pos}"
+
+  """
+  tabix ${data_file} ${pos_range} |\
+   calc_agg_pileups.py -n ${n_indiv} |\
+   bgzip > ${summ_path} 
+  """
+}
+
+process combine_summaries {
+  label "anyqueue"
+
+  input:
+  tuple val(chrom), file(dat_file_list) from summary_parts
+    .groupTuple()
+
+  output:
+  file(out_path) into depth_summaries
+
+  publishDir "result/depth_summary"
+
+  script:
+  out_path = "${chrom}_depth_summary.tsv.gz"
+  """
+  find . -name '*.tsv.gz' | sort | xargs -I {} cat {} >> tmp.out
+  mv tmp.out ${out_path}
+  """
 }
