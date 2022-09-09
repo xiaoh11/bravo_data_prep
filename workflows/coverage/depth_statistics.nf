@@ -13,8 +13,8 @@ process select_files {
   script:
   """
   ls ${params.cram_files} |\
-     shuf -n 10 |\
-     tee selected_crams.txt
+    shuf -n $params.n_indiv |\
+    tee selected_crams.txt
   """
 
 }
@@ -66,7 +66,7 @@ process aggregate_depths_rnd_1 {
   input:
   tuple val(chromosome), 
         file(depth_files), 
-        file(depth_tbis) from pileups.groupTuple(size: grp_size)
+        file(depth_tbis) from pileups.groupTuple(size: params.grp_size)
 
   output:
   tuple val(chromosome), 
@@ -89,7 +89,7 @@ process aggregate_depths_rnd_2 {
   tuple val(chromosome), file(dat_file_list), file(idx_file_list) from agg_rnd_1
     .toSortedList({ lhs, rhs -> lhs[0] <=> rhs[0] })
     .flatMap()
-    .groupTuple(size: grp_size, remainder: true)
+    .groupTuple(size: params.grp_size, remainder: true)
 
   output:
   tuple val(chromosome), 
@@ -113,7 +113,7 @@ process aggregate_depths_rnd_3 {
   tuple val(chromosome), file(dat_file_list), file(idx_file_list) from agg_rnd_2
     .toSortedList({ lhs, rhs -> lhs[0] <=> rhs[0] })
     .flatMap()
-    .groupTuple(size: grp_size, remainder: true)
+    .groupTuple(size: params.grp_size, remainder: true)
 
   output:
   tuple val(chromosome), 
@@ -137,12 +137,12 @@ process aggregate_depths_rnd_4 {
   tuple val(chromosome), file(dat_file_list), file(idx_file_list) from agg_rnd_3
     .toSortedList({ lhs, rhs -> lhs[0] <=> rhs[0] })
     .flatMap()
-    .groupTuple(size: grp_size, remainder: true)
+    .groupTuple(size: params.grp_size, remainder: true)
 
   output:
   tuple val(chromosome), 
-        file("${chromosome}_rnd_3_*.tsv.gz"),
-        file("${chromosome}_rnd_3_*.tsv.gz.tbi") into agg_rnd_4
+        file("${chromosome}_rnd_4_*.tsv.gz"),
+        file("${chromosome}_rnd_4_*.tsv.gz.tbi") into agg_rnd_4
 
   publishDir "result/depth_aggregation"
   
@@ -172,7 +172,7 @@ process prep_summarization {
   input:
   tuple val(chrom), file(data_path), file(idx_path) from agg_rnd_4  
 
-  each part_num from Channel.from(1..num_chunks)
+  each part_num from Channel.from(1..params.num_chunks)
 
   output:
   tuple val(chrom), env(START), env(END), file(data_path), file(idx_path) into depth_chunking
@@ -182,7 +182,7 @@ process prep_summarization {
   """
   MIN_POS=\$(zcat $data_path | head -n 1 | cut -f2)
 
-  let "INC = 1 + (${max_pos} - MIN_POS) / ${num_chunks}"
+  let "INC = 1 + (${max_pos} - MIN_POS) / ${params.num_chunks}"
   let "END = MIN_POS + (INC * $part_num)"
   let "START = 1 + END - INC"
   """
@@ -203,7 +203,7 @@ process summarize_depths {
 
   """
   tabix ${data_file} ${pos_range} |\
-   calc_agg_pileups.py -n ${n_indiv} |\
+   calc_agg_pileups.py -n ${params.n_indiv} |\
    bgzip > ${summ_path} 
   """
 }
