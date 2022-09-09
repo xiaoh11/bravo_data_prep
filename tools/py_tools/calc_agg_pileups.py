@@ -32,6 +32,7 @@ def main(n_indiv=100):
 
     for line in sys.stdin:
         chrom, pos, depth_str = line.rstrip().split()
+        i_pos = int(pos)
         depths = [int(i) for i in depth_str.split(';')]
 
         # Initialize tabulation data structures with zeros in case insufficient data to fill.
@@ -48,8 +49,8 @@ def main(n_indiv=100):
         chromosome_id = chrom.replace('chr', '', 1)
 
         summary["chrom"] = chromosome_id
-        summary["start"] = pos
-        summary["end"] = pos
+        summary["start"] = i_pos
+        summary["end"] = i_pos
         summary["mean"] = round(mean(depths), 4)
         summary["median"] = round(median(depths), 4)
 
