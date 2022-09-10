@@ -216,7 +216,7 @@ process combine_summaries {
     .groupTuple()
 
   output:
-  file(out_path) into depth_summaries
+  tuple val(chrom), file(out_path) into depth_summaries
 
   publishDir "result/depth_summary"
 
@@ -225,5 +225,20 @@ process combine_summaries {
   """
   find . -name '*.tsv.gz' | sort | xargs -I {} cat {} >> tmp.out
   mv tmp.out ${out_path}
+  """
+}
+
+process prune {
+  input:
+  set val(chromosome), file(full_depth) from depth_summaries
+  each limit from Channel.from(params.prune_limits)
+
+  output:
+  tuple file("${chromosome}.bin_${limit}.tsv.gz"), file("${chromosome}.bin_${limit}.tsv.gz.tbi")
+
+  publishDir "result/bin_${limit}", pattern: "*.bin_*.tsv.gz*"
+
+  """
+  prune.py -i ${full_depth} -l ${limit} -o ${chromosome}.bin_${limit}.tsv.gz
   """
 }
