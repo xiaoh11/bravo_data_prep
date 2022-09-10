@@ -35,4 +35,3 @@ if __name__ == '__main__':
          else:
             bin_data['end'] = data['end']
       write(ofile, bin_data)
-   pysam.tabix_index(args.out_coverage_file, seq_col = 0, start_col = 1, end_col = 2, force = True)
