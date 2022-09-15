@@ -234,7 +234,7 @@ process prune {
   each limit from Channel.from(params.prune_limits)
 
   output:
-  tuple file("${chromosome}.bin_${limit}.tsv.gz"), file("${chromosome}.bin_${limit}.tsv.gz.tbi")
+  tuple file("${chromosome}.bin_${limit}.tsv.gz")
 
   publishDir "result/bin_${limit}", pattern: "*.bin_*.tsv.gz*"
 
