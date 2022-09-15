@@ -17,6 +17,13 @@ The cram files used in the pipeline should be symlinked under the data/crams dir
 This facilitates aggregating crams from multiple sources or projects.
 It avoids having multiple or complex globs in the nextflow.config.
 
+## Preparation 
+- Symlinks to reference: taken care of by ansible deployment.
+- Symlinks to bcfs: Use same bcfs as process_bcf workflow.
+- Symlinks to crams: Use same crams as coverage workflow.
+
+The symlinks to bcfs and crams still done manually or by some script in `hacks/`
+
 ## Running
 
 Interactively on  SLURM:
