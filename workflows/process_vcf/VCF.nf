@@ -18,6 +18,7 @@ process generate_samples_file {
   """
 }
 
+
 /*
   Use samples file if provided.
 */
@@ -31,6 +32,8 @@ if(params.samples_path != 'NO_FILE') {
     Apply filter to input file pairs to exclude M and Y chromosomes.
 */
 process calc_histograms {
+  label "highcpu"
+
   input:
   tuple val(id), file(bcf), file(idx) from Channel
     .fromFilePairs(params.bcfs_full, flat: true)
@@ -53,6 +56,7 @@ process calc_histograms {
   tabix --csi -f ${outfile} > tabix.log
   """
 }
+
 
 /*
   Annotate INFO from sites only vcfs into histogram vcfs
@@ -81,7 +85,10 @@ process annotate_bcfs {
   """
 }
 
+
 process vep {
+  label "highmem"
+
   publishDir "result/vep/${chromosome}", pattern: "*.vep.gz*"
 
   input:
@@ -115,7 +122,16 @@ process vep {
 }
 
 
+/* Depends on:
+  - incoming vcf split by position and ordered.
+  - underscore delime position in filename:  chr_start_end
+  demo.chr12_132700001_132800000.genotypes.hist.anno.vep.gz
+  demo.chr12_132800001_132900000.genotypes.hist.anno.vep.gz
+  demo.chr12_132900001_133000000.genotypes.hist.anno.vep.gz
+*/
 process concat {
+  label "highcpu"
+
   input:
   tuple val(chromosome), file(vcfs), file(indices) from vep.groupTuple()
 
@@ -125,14 +141,34 @@ process concat {
   publishDir "result/concat", pattern: "*.aggr.vep.concat.gz*"
 
   """
-  find . -name "*.vep.gz" > files_list.txt
-  bcftools concat -a -f files_list.txt -Oz -o ${chromosome}.aggr.vep.concat.gz
+  # Sort file names by first position in file name
+  mapfile -t ALL_FILE_NAMES < <(find . -name "*.vep.gz" | sort -n -k 2 -t '_')
+
+  cat /dev/null > sorted_files_list.txt
+  cat /dev/null > omitted_files_list.txt
+
+  # Omit VCF files with no calls as they bork concat.
+  for F_NAME in "\${ALL_FILE_NAMES[@]}"
+  do
+    N_LINES=\$(bcftools view --no-header "\${F_NAME}" | head | wc -l)
+
+    if [ \${N_LINES} -gt 0 ]
+    then
+      echo "\${F_NAME}" >> sorted_files_list.txt
+    else
+      echo "\${F_NAME}" >> omitted_files_list.txt
+    fi
+  done
+
+  bcftools concat -f sorted_files_list.txt --naive -O z -o ${chromosome}.aggr.vep.concat.gz
   tabix -f --csi ${chromosome}.aggr.vep.concat.gz
   """
 }
 
 
 process cadd {
+  label "highcpu"
+
   input:
   tuple val(chromosome), file(vcf), file(index) from concat
   file cadds from Channel.fromPath(params.cadd.tsv_path).collect()
@@ -154,6 +190,8 @@ process cadd {
 }
 
 process percentiles {
+  label "highcpu"
+
   input:
   val qc_metric from Channel.from(params.percentiles.qc_metrics)
   file vcfs from cadds1.map { it[1] }.collect()
@@ -179,6 +217,8 @@ process percentiles {
 
 
 process merge_vcf {
+  label "highmem"
+
   input:
   tuple val(chromosome), file(vcf), file(vcf_index) from cadds2
   val qc_metrics from Channel.from(params.percentiles.qc_metrics).toList().map { it.join(" ") }
@@ -208,15 +248,17 @@ process merge_vcf {
 
 
 process merge_metrics {
-   input:
-   file metrics from metric_summaries.collect()
+  label "highcpu"
 
-   output:
-   file "metrics.json.gz" into merged_metrics
+  input:
+  file metrics from metric_summaries.collect()
 
-   publishDir "result/final/qc_metrics", pattern: "metrics.json.gz"
+  output:
+  file "metrics.json.gz" into merged_metrics
 
-   """
-   for f in ${metrics}; do gzip -dc "\${f}"; done | gzip > metrics.json.gz
-   """
+  publishDir "result/final/qc_metrics", pattern: "metrics.json.gz"
+
+  """
+  for f in ${metrics}; do gzip -dc "\${f}"; done | gzip > metrics.json.gz
+  """
 }
