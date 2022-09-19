@@ -10,6 +10,7 @@ Dealing with moving directories of links or crams and trimming reference data to
 - `subset_filtered.sh`: Used for making small subset of chr11 calls for local testing. (from genotype only bcfs)
 - `subset_full_bcf.sh`: Used for making small subset of chr11 calls for local testing. (from full bcfs)
 - `make_link_rewrite_script`: Used to rewrite links when the target files were moved.
+- `make_vignette_dir.sh`: Used to package backing for the BRAVO API. Predecessor of organize_bravo_results.sh
 
 ## Small Scale Development & Testing
 ### Prepare VCFs
