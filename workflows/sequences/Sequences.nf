@@ -4,7 +4,7 @@
     Should be a value channel to permit indefinite re-use.
     Either generated from list of crams or provided as text file.
 
-  Samples info channel:  new_id, old_id, cram, crai
+  Samples info channel:  new_id, old_id, path/to/cram, path/to/crai
     Either generated from list of crams or parsed from provided samples file.
 */
 if(params.samples_path == 'NO_FILE') {
@@ -18,40 +18,23 @@ if(params.samples_path == 'NO_FILE') {
                                ["${it.getSimpleName()}","${it.getSimpleName()}",file("${it}"),file("${it}.crai")]
                              }
 } else {
-  samples_file_chan = Channel.fromPath(params.samples_file)
+  samples_file_chan = Channel.fromPath(params.samples_path)
                              .first()
 
-  samples_info_chan = Channel.from(file(params.samples_file).readLines())
+  samples_info_chan = Channel.from(file(params.samples_path).readLines())
                              .map { 
                                line -> def fields = line.split();
                                [fields[0], fields[1], file(fields[2]), file(fields[3])]
                              }
 }
 
-process dbg_report {
-  input:
-  file vcf from Channel.fromPath(params.bcfs_path)
-  file samples_file from samples_file_chan
-
-  output:
-  stdout into demo
-
-  """
-  echo $vcf
-  echo $samples_file
-  """
-}
-
-demo.view()
 
 process variants_by_sample {
-  // Using scratch may speed up work on cluster nodes.
-  //scratch true
+  label "highcpu"
 
   input:
   file vcf from Channel.fromPath("${params.bcfs_path}")
-  // Included to generate symlinks to index files.
-  file csi from Channel.fromPath("${params.bcfs_path}.csi")
+  //file csi from Channel.fromPath("${params.bcfs_path}.csi")
   file samples_file from samples_file_chan
 
   output:
@@ -60,12 +43,15 @@ process variants_by_sample {
 
   script:
   """
-  vcf_hash=`basename ${vcf} | md5sum | cut -f1 -d" "`
-  ${params.random.exec} -i ${vcf} -s ${samples_file} -k ${params.random.max_hethom} -e ${params.random.seed} -o \${vcf_hash}
+  VCF_HASH=`basename ${vcf} | md5sum | cut -f1 -d" "`
+  ${params.random.exec} -i ${vcf} -s ${samples_file} -k ${params.random.max_hethom} -e ${params.random.seed} -o \${VCF_HASH}
   """
 }
 
+
 process merge_sample_maps {
+  label "highmem"
+
   input:
   file sample_map_list from sample_maps.collect()
 
@@ -92,11 +78,9 @@ process merge_sample_maps {
   """
 }
 
-/*
-  This generates the backing variant map for BRAVO API
-*/
+//  This generates the backing variant map for BRAVO API
 process merge_variant_maps {
-  echo true   
+  label "highmem"
 
   input:
   file variant_map_list from variant_maps.collect()
@@ -119,10 +103,10 @@ process merge_variant_maps {
   """
 }
 
-/*
-  This generates the backing crams for BRAVO API
-*/
+//  This generates the backing crams for BRAVO API
 process extract_sequences {
+  label "highmem"
+
   scratch true
   errorStrategy "ignore"
 
