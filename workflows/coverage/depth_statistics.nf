@@ -216,15 +216,17 @@ process combine_summaries {
     .groupTuple()
 
   output:
-  tuple val(chrom), file(out_path) into depth_summaries
+  tuple val(chrom), file(out_path), file(out_tbi) into depth_summaries
 
   publishDir "result/depth_summary"
 
   script:
   out_path = "${chrom}_depth_summary.tsv.gz"
+  out_tbi = "${chrom}_depth_summary.tsv.gz.tbi"
   """
   find . -name '*.tsv.gz' | sort | xargs -I {} cat {} >> tmp.out
   mv tmp.out ${out_path}
+  tabix ${out_path}
   """
 }
 
