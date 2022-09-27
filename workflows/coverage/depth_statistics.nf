@@ -240,7 +240,9 @@ process prune {
 
   publishDir "result/bin_${limit}", pattern: "*.bin_*.tsv.gz*"
 
+  script:
   """
   prune.py -i ${full_depth} -l ${limit} -o ${chromosome}.bin_${limit}.tsv.gz
+  tabix -s 1 -b 2 -e 3 ${chromosome}.bin_${limit}.tsv.gz
   """
 }
