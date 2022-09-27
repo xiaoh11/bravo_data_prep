@@ -226,7 +226,7 @@ process combine_summaries {
   """
   find . -name '*.tsv.gz' | sort | xargs -I {} cat {} >> tmp.out
   mv tmp.out ${out_path}
-  tabix ${out_path}
+  tabix -s 1 -b 2 -e 3 ${out_path}
   """
 }
 
