@@ -57,11 +57,11 @@ process prune {
    each limit from Channel.from(params.prune_limits)
 
    output:
-   tuple file("${chromosome}.bin_${limit}.json.gz"), file("${chromosome}.bin_${limit}.json.gz.tbi")
+   tuple file("${chromosome}.bin_${limit}.json.gz"), file("${chromosome}.bin_${limit}.tsv.gz.tbi")
 
    publishDir "result/bin_${limit}", pattern: "*.bin_*.json.gz*"
 
    """
-   prune.py -i ${full_json} -l ${limit} -o ${chromosome}.bin_${limit}.json.gz
+   prune.py -i ${full_json} -l ${limit} -o ${chromosome}.bin_${limit}.tsv.gz
    """
 }
