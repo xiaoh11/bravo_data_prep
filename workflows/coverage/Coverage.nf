@@ -1,4 +1,5 @@
 process pileup {
+  memory "0.75 GB"
 
   input:
   // get ID, ID.cram, and ID.cram.crai from glob of crams
@@ -32,6 +33,8 @@ process pileup {
 }
 
 process aggregate {
+   memory "6 GB"
+
    input:
    tuple val(chromosome), file(depth_files), file(depth_tbis) from pileups.groupTuple()
 
@@ -47,16 +50,18 @@ process aggregate {
 }
 
 process prune {
+   memory "4 GB"
+
    input:
    set val(chromosome), file(full_json), file(full_json_tbi) from aggregated
    each limit from Channel.from(params.prune_limits)
 
    output:
-   tuple file("${chromosome}.bin_${limit}.json.gz"), file("${chromosome}.bin_${limit}.json.gz.tbi")
+   tuple file("${chromosome}.bin_${limit}.json.gz"), file("${chromosome}.bin_${limit}.tsv.gz.tbi")
 
    publishDir "result/bin_${limit}", pattern: "*.bin_*.json.gz*"
 
    """
-   prune.py -i ${full_json} -l ${limit} -o ${chromosome}.bin_${limit}.json.gz
+   prune.py -i ${full_json} -l ${limit} -o ${chromosome}.bin_${limit}.tsv.gz
    """
 }

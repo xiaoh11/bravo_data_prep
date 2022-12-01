@@ -1,14 +1,10 @@
 #!/usr/bin/env bash
 
-# Create the runtime and basis data directories from completed workflow results.
-#   The data prep workflows are not run by this script.
-#
-# Takes path to top level directory as an arg.
-#   The basis and runtime dirs will be created and populated under that dir.
+# This script is desgined to be run on the cluster after all the workflows have completed.
+# Takes the directory into which the results will be copied as an argument.
 #
 # Use:
-# ./make_vignette_dir.sh /path/to/top/dir
-#
+# ./organize_bravo_results.sh /path/to/destination/base/dir
 #
 # Basis data supports the Bravo API custom commands to populate mongo DB:
 #  flask load-genes \
@@ -21,27 +17,32 @@
 #
 # flask load-qc-metrics "${BASIS}"/qc_metrics/metrics.json.gz
 
-# Default to making a data directory in working dir.
+####################
+# Config and Setup #
+####################
+
+# Top directory for holding results.  Defaults to ./data
 TOP_DIR="${1:-./data}"
 
-# Assume workflows directory is in working dir.
-WORKFLOWS="./workflows"
-
-# Default to Reference locations on cluster for populationg ref data
-BASIS_SRC_DIR="${BASIS_SRC_DIR:-/apps/reference/api}"
-REF_SRC_DIR="${REF_SRC_DIR:-/apps/reference}"
-
-# Result directories
-RES_COVERAGE="${WORKFLOWS}"/coverage/result 
-RES_SEQUENCE="${WORKFLOWS}"/sequences/result
-RES_PREP_VCF="${WORKFLOWS}"/prepare_vcf_teddy/result
-
-# Create directory structure.
+# Create directory structure to hold results
 RUNTIME="${TOP_DIR}"/runtime
 BASIS="${TOP_DIR}"/basis
 
 mkdir -p "${RUNTIME}"
 mkdir -p "${BASIS}"
+
+# Reference locations on cluster for populationg bravo ref data
+BASIS_SRC_DIR="${BASIS_SRC_DIR:-/apps/reference/api}"
+REF_SRC_DIR="${REF_SRC_DIR:-/apps/reference}"
+
+# Nextflow workflows directory of data prep project
+WORKFLOWS="/home/grosscol_umich_edu/data_prep/workflows"
+
+# Result directories
+RES_COVERAGE="${WORKFLOWS}"/coverage/result 
+RES_SEQUENCE="${WORKFLOWS}"/sequences/result
+RES_PREP_VCF="${WORKFLOWS}"/process_vcf/result
+
 
 #####################
 # Fill Runtime Data #
@@ -49,7 +50,7 @@ mkdir -p "${BASIS}"
 
 mkdir -p "${RUNTIME}"/coverage
 cp -Lru "${RES_COVERAGE}"/bin* "${RUNTIME}"/coverage/
-cp -Lru "${RES_COVERAGE}"/full "${RUNTIME}"/coverage/
+cp -Lru "${RES_COVERAGE}"/depth_summary "${RUNTIME}"/coverage/full
 
 mkdir -p "${RUNTIME}"/crams
 cp -Lru "${RES_SEQUENCE}"/sequences "${RUNTIME}"/crams/
