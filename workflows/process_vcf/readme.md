@@ -7,8 +7,7 @@ This pipeline requires both:
 
 ## Preparation 
 - Symlinks to reference: taken care of by ansible deployment.
-- Symlinks to bcfs: Use same bcfs as process_bcf workflow.
-- Symlinks to crams: Use same crams as coverage workflow.
+- Symlinks to bcfs: symlink to full and sites directories.
 
 The symlinks to bcfs and crams still done manually or by some script in `hacks/`
 
