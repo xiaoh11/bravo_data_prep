@@ -12,6 +12,7 @@ __pycache__/
 .envrc
 .idea/
 .vscode/
+*.swp
 
 # Ignore cmake and cget build artifacts
 CMakeCache.txt
@@ -25,6 +26,9 @@ bin/
 data/
 work/
 result/
+*.html
+*.tsv*
 
 # Experiments with nextflow DSL
 workflows/experiments
+
