@@ -14,7 +14,7 @@ The symlinks to bcfs and crams still done manually or by some script in `hacks/`
 ## Running
 Interactively on  SLURM:
 ```sh
-nextflow run vcf.nf -with-trace -profile slurm
+nextflow run vcf.nf -with-report report.html -profile slurm
 ```
 
 Run in background on SLURM:
