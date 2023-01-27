@@ -62,7 +62,7 @@ process calc_histograms {
   Annotate INFO from sites only vcfs into histogram vcfs
 */
 process annotate_bcfs {
-  label: "annotate"
+  label "annotate"
 
   input:
   tuple val(chr), file(bcf), file(idx) from histogramed
