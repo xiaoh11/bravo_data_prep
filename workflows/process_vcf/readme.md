@@ -8,6 +8,7 @@ This pipeline requires both:
 ## Preparation 
 - Symlinks to reference: taken care of by ansible deployment.
 - Symlinks to bcfs: symlink to full and sites directories.
+- Sample ids file (see gotchas below) 
 
 The symlinks to bcfs and crams still done manually or by some script in `hacks/`
 
@@ -19,8 +20,9 @@ nextflow run vcf.nf -with-report report.html -profile slurm
 
 Run in background on SLURM:
 ```sh
-nextflow run vcf.nf -with-trace -profile slurm -ansi-log false -bg > coverage.log
+nextflow run vcf.nf -profile slurm -with-report vcf_report.html -ansi-log false -bg > vcf.log
 ```
+
 For shared clusters, it would be better practice to have a wrapper to submit the nextflow run as a slurm job.
 That would avoid putting load on the login node.
 Since this workflow is written for a single purpose cluster, it isn't an issue.

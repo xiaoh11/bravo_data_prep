@@ -32,7 +32,7 @@ if(params.samples_path != 'NO_FILE') {
     Apply filter to input file pairs to exclude M and Y chromosomes.
 */
 process calc_histograms {
-  label "smallproc"
+  label "small"
 
   input:
   tuple val(id), file(bcf), file(idx) from Channel
@@ -62,7 +62,7 @@ process calc_histograms {
   Annotate INFO from sites only vcfs into histogram vcfs
 */
 process annotate_bcfs {
-  label: "highcpu"
+  label: "annotate"
 
   input:
   tuple val(chr), file(bcf), file(idx) from histogramed
@@ -89,7 +89,7 @@ process annotate_bcfs {
 
 
 process vep {
-  label "highmem"
+  label "vep"
 
   publishDir "result/vep/${chromosome}", pattern: "*.vep.gz*"
 
@@ -132,7 +132,7 @@ process vep {
   demo.chr12_132900001_133000000.genotypes.hist.anno.vep.gz
 */
 process concat {
-  label "smallproc"
+  label "small"
 
   input:
   tuple val(chromosome), file(vcfs), file(indices) from vep.groupTuple()
@@ -169,7 +169,7 @@ process concat {
 
 
 process cadd {
-  label "smallproc"
+  label "small"
 
   input:
   tuple val(chromosome), file(vcf), file(index) from concat
@@ -192,7 +192,7 @@ process cadd {
 }
 
 process percentiles {
-  label "smallproc"
+  label "small"
 
   input:
   val qc_metric from Channel.from(params.percentiles.qc_metrics)
@@ -219,7 +219,7 @@ process percentiles {
 
 
 process merge_vcf {
-  label "smallproc"
+  label "merge"
 
   input:
   tuple val(chromosome), file(vcf), file(vcf_index) from cadds2
@@ -250,7 +250,7 @@ process merge_vcf {
 
 
 process merge_metrics {
-  label "smallproc"
+  label "small"
 
   input:
   file metrics from metric_summaries.collect()
