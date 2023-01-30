@@ -22,13 +22,15 @@ cget/
 # Ignore nextflow artifacts
 *.nextflow.log*
 .nextflow/
+.nextflow.pid
 bin/
 data/
 work/
 result/
 *.html
 *.tsv*
+*.log
 
 # Experiments with nextflow DSL
 workflows/experiments
-
+scratch.nf
