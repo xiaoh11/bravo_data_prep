@@ -13,6 +13,8 @@
 ##########
 SAMPLE_FILE=~/freeze10_corrected_sample_ids.txt
 COVERAGE_CRAM_DIR=~/data_prep/workflows/coverage/data/crams
+# Number of IDs to subset for coverage crams dir.
+N_SUBSET=500
 
 # Buckets where crams are located
 CRAM_BUCKETS=("fc-56ac46ea-efc4-4683-b6d5-6d95bed41c5e"
@@ -31,6 +33,7 @@ CRAM_DIRS=("/mnt/crams_1000g"
 ###########
 ALL_CRAMS_INDEX=/tmp/all_cram_paths.txt
 ALL_CRAMS_MAP=/tmp/all_crams_map.txt
+COVERAGE_SAMPLE_LIST=/tmp/coverage_subset_ids.txt
 
 ##############
 # PROCESSING #
@@ -79,9 +82,13 @@ fi
 # Create ALL the symlinks for both the cram and crai
 OLD_IFS=$IFS
 IFS=$'\t'
+# Clear out any existing coverage crams dir and crams list
+rm ${COVERAGE_CRAM_DIR}/*
+echo /dev/null > ${COVERAGE_SAMPLE_LIST}
+
+# Create new crams symlinks and samples list.
 while read ID TARGET; do
-	echo "$ID"
-	echo "$TARGET"
-	# ln -f -s "${TARGET}" "${COVERAGE_CRAM_DIR}/${ID}.cram"
-	# ln -f -s "${TARGET}.crai" "${COVERAGE_CRAM_DIR}/${ID}.cram.crai"
-done < <(shuf -n 10 ${ALL_CRAMS_MAP})
+	echo "$ID" >> ${COVERAGE_SAMPLE_LIST}
+	ln -f -s "${TARGET}" "${COVERAGE_CRAM_DIR}/${ID}.cram"
+	ln -f -s "${TARGET}.crai" "${COVERAGE_CRAM_DIR}/${ID}.cram.crai"
+done < <(shuf -n ${N_SUBSET} ${ALL_CRAMS_MAP})
