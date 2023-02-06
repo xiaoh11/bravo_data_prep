@@ -28,12 +28,12 @@ The symlinks to bcfs and crams still done manually or by some script in `hacks/`
 
 Interactively on  SLURM:
 ```sh
-nextflow run depth_statistics.nf -with-trace -profile slurm
+nextflow run depth_statistics.nf -with-report cov_report.html -profile slurm
 ```
 
 Run in background on SLURM:
 ```sh
-nextflow run depth_statistics.nf -with-trace -profile slurm -ansi-log false -bg > coverage.log
+nextflow run depth_statistics.nf -with-report cov_report.html -profile slurm -ansi-log false -bg > coverage.log
 ```
 For shared clusters, it would be better practice to have a wrapper to submit the nextflow run as a slurm job.
 That would avoid putting load on the login node.
