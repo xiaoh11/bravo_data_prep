@@ -1,6 +1,8 @@
 import java.nio.file.Paths
 
 process select_files {
+  label "small"
+
   input:
   path data_dir from Channel.fromPath(params.cram_base_dir)
 
@@ -20,7 +22,7 @@ process select_files {
 }
 
 process pileup {
-  label "highcpu"
+  label "small"
 
   input:
   // Use chromosome as processing grouping.
@@ -61,7 +63,7 @@ process pileup {
 ******************************************************************************/
 
 process aggregate_depths_rnd_1 {
-  label "highmem"
+  label "early_agg"
 
   input:
   tuple val(chromosome), 
@@ -84,7 +86,8 @@ process aggregate_depths_rnd_1 {
 }
 
 process aggregate_depths_rnd_2 {
-  label "highmem"
+  label "early_agg"
+
   input:
   tuple val(chromosome), file(dat_file_list), file(idx_file_list) from agg_rnd_1
     .toSortedList({ lhs, rhs -> lhs[0] <=> rhs[0] })
@@ -107,7 +110,7 @@ process aggregate_depths_rnd_2 {
 }
 
 process aggregate_depths_rnd_3 {
-  label "highmem"
+  label "early_agg"
 
   input:
   tuple val(chromosome), file(dat_file_list), file(idx_file_list) from agg_rnd_2
@@ -131,7 +134,7 @@ process aggregate_depths_rnd_3 {
 }
 
 process aggregate_depths_rnd_4 {
-  label "highmem"
+  label "late_agg"
 
   input:
   tuple val(chromosome), file(dat_file_list), file(idx_file_list) from agg_rnd_3
@@ -167,7 +170,7 @@ process aggregate_depths_rnd_4 {
 *******************************************************************************/
 
 process prep_summarization {
-  label "anyqueue"
+  label "small"
 
   input:
   tuple val(chrom), file(data_path), file(idx_path) from agg_rnd_4  
@@ -189,7 +192,7 @@ process prep_summarization {
 }
 
 process summarize_depths {
-  label "anyqueue"
+  label "small"
 
   input:
   tuple val(chrom), val(start_pos), val(end_pos), file(data_file), file(idx_file) from depth_chunking
@@ -209,7 +212,7 @@ process summarize_depths {
 }
 
 process combine_summaries {
-  label "anyqueue"
+  label "small"
 
   input:
   tuple val(chrom), file(dat_file_list) from summary_parts
@@ -231,6 +234,8 @@ process combine_summaries {
 }
 
 process prune {
+  label "small"
+
   input:
   set val(chromosome), file(full_depth) from depth_summaries
   each limit from Channel.from(params.prune_limits)
