@@ -79,7 +79,7 @@ if [ ! -f ${ALL_CRAMS_MAP} ]; then
 	rm /tmp/basenames.fifo
 fi
 
-# Create ALL the symlinks for both the cram and crai
+# Create symlinks for both the cram and crai
 OLD_IFS=$IFS
 IFS=$'\t'
 # Clear out any existing coverage crams dir and crams list
