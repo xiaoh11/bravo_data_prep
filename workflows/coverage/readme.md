@@ -1,4 +1,4 @@
-# Coverage Workflow
+# Depth of Coverage Workflow
 Calculate the read depth for various base pair widths (bin widths)
 
 ## Requires

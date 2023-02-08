@@ -221,11 +221,11 @@ process combine_summaries {
   output:
   tuple val(chrom), file(out_path), file(out_tbi) into depth_summaries
 
-  publishDir "result/depth_summary"
+  publishDir "result/full"
 
   script:
-  out_path = "${chrom}_depth_summary.tsv.gz"
-  out_tbi = "${chrom}_depth_summary.tsv.gz.tbi"
+  out_path = "${chrom}.full.tsv.gz"
+  out_tbi = "${chrom}.full.tsv.gz.tbi"
   """
   find . -name '*.tsv.gz' | sort | xargs -I {} cat {} >> tmp.out
   mv tmp.out ${out_path}
