@@ -28,6 +28,7 @@ data/
 work/
 result/
 *.html
+*.html.*
 *.tsv*
 *.log
 

@@ -30,7 +30,7 @@ if(params.samples_path == 'NO_FILE') {
 
 
 process variants_by_sample {
-  label "highcpu"
+  label "medium"
 
   input:
   file vcf from Channel.fromPath("${params.bcfs_path}")
