@@ -4,7 +4,7 @@
 
 SRC=/home/grosscol_umich_edu/data_prep/workflows/coverage/result
 RUN_NAME=fr10_2chrom
-DEST=/mnt/results/${RUN_NAME}
+DEST=/mnt/results/${RUN_NAME}/coverage
 
 if [ ! -d ${SRC} ]; then
   echo "Dir not found: ${SRC}"
@@ -12,7 +12,7 @@ if [ ! -d ${SRC} ]; then
 fi
 
 if [ ! -d ${DEST} ]; then
-  mkdir ${DEST}
+  mkdir -p ${DEST}
 fi
 
 # Copy the full coverage result
