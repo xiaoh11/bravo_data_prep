@@ -50,7 +50,7 @@ process variants_by_sample {
 
 
 process merge_sample_maps {
-  label "highmem"
+  label "small"
 
   input:
   file sample_map_list from sample_maps.collect()
