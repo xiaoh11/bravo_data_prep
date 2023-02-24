@@ -89,6 +89,10 @@ echo /dev/null > ${COVERAGE_SAMPLE_LIST}
 # Create new crams symlinks and samples list.
 while read ID TARGET; do
 	echo "$ID" >> ${COVERAGE_SAMPLE_LIST}
+	# Workaround for first hit to gcsfuse failing.
+	if [ ! -f ${TARGET} ]; then
+		sleep 0.1
+	fi
 	ln -f -s "${TARGET}" "${COVERAGE_CRAM_DIR}/${ID}.cram"
 	ln -f -s "${TARGET}.crai" "${COVERAGE_CRAM_DIR}/${ID}.cram.crai"
 done < <(shuf -n ${N_SUBSET} ${ALL_CRAMS_MAP})
