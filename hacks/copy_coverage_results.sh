@@ -1,24 +1,31 @@
 #!/usr/bin/env bash
 
-# Copy result from coverage workflow to results GCP bucket
-
 SRC=/home/grosscol_umich_edu/data_prep/workflows/coverage/result
-RUN_NAME=fr10_2chrom
-DEST=/mnt/results/${RUN_NAME}/coverage
+RUN_NAME=freeze10
+BUCKET=bravo-results
+DEST=gs://${BUCKET}/${RUN_NAME}/coverage
 
+# Requires gsutil to be installed
+command -v gsutil 1> /dev/null 2>&1 || \
+{ echo >&2 "gsutil required but it's not installed.  Aborting."; exit 1; }
+
+# Verify source and destination
 if [ ! -d ${SRC} ]; then
   echo "Dir not found: ${SRC}"
   exit 1
 fi
 
-if [ ! -d ${DEST} ]; then
-  mkdir -p ${DEST}
+if ! gsutil ls "gs://${BUCKET}" 1> /dev/null 2>&1; then
+  echo "Bucket not found: gs://${BUCKET}"
+  exit 1
 fi
+
+# Copy result from coverage workflow to results GCP bucket
 
 # Copy the full coverage result
 echo "Copying full coverage result" 
-cp -Lr ${SRC}/full ${DEST}
-
+# gsutil -m cp -r ${SRC}/full ${DEST}
+ 
 # Copy the pruned coverage result
 echo "Copying full coverage result" 
-cp -Lr ${SRC}/bin_* ${DEST}
+gsutil -m cp -r "${SRC}/bin_*" ${DEST}
