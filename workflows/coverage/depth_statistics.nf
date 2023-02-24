@@ -237,7 +237,7 @@ process prune {
   label "small"
 
   input:
-  set val(chromosome), file(full_depth) from depth_summaries
+  set val(chromosome), file(full_depth), file(full_idx) from depth_summaries
   each limit from Channel.from(params.prune_limits)
 
   output:
