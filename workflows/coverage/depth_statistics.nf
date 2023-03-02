@@ -242,6 +242,7 @@ process prune {
 
   output:
   file("${chromosome}.bin_${limit}.tsv.gz")
+  file("${chromosome}.bin_${limit}.tsv.gz.tbi")
 
   publishDir "result/bin_${limit}", pattern: "*.bin_*.tsv.gz*"
 

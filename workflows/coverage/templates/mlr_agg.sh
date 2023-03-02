@@ -1,5 +1,8 @@
-cat /dev/null > ${result_file}
+# Enumerate inputs
 mapfile -d '' INFILES < <(find . -name '*.gz' -print0)
+
+# Create file to append aggregate results
+cat /dev/null > agg.gz 
 
 ITT=0
 POS=${min_pos}
@@ -28,7 +31,7 @@ do
   # Aggregate depths from depth file chunks
   mlr -N --tsv 'nest' --ivar ";" -f 3 \${PIPES[@]} |\
     sort --numeric-sort --key=2 |\
-    bgzip >> ${result_file}
+    bgzip >> agg.gz
 
   # Clean up pipes
   for P in \${PIPES[@]}
@@ -41,5 +44,8 @@ do
   let "ITT = ITT + 1"
 done
 
-# Tabix index the results
+# Work around tabix not working for some concatenated bgzip files.
+zcat agg.gz | bgzip --threads 2 > ${result_file}
+
+# Index the results
 tabix -s 1 -b 2 -e 2 ${result_file}
