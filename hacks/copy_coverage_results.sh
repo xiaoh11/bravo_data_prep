@@ -24,7 +24,7 @@ fi
 
 # Copy the full coverage result
 echo "Copying full coverage result" 
-# gsutil -m cp -r ${SRC}/full ${DEST}
+gsutil -m cp -r ${SRC}/full ${DEST}
  
 # Copy the pruned coverage result
 echo "Copying full coverage result" 
