@@ -45,8 +45,7 @@ process calc_histograms {
   tuple chr_str, file("${bcf.baseName}.hist.bcf"), file("${bcf.baseName}.hist.bcf.csi") into histogramed
 
   script:
-  chr_patt = 'chr[1-9X]\\{1,2\\}'
-  chr_str = (bcf.baseName =~ /chr[1-9X]{1,2}/)[0]
+  chr_str = (bcf.baseName =~ /chr[0-9X]{1,2}/)[0]
   outfile = "${bcf.baseName}.hist.bcf"
 
   """
@@ -90,6 +89,7 @@ process annotate_bcfs {
 
 process vep {
   label "vep"
+  memory { task.attempt > 1 ? 50.GB : 10.GB }
 
   publishDir "result/vep/${chromosome}", pattern: "*.vep.gz*"
 
