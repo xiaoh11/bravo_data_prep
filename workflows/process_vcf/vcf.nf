@@ -192,7 +192,7 @@ process cadd {
 }
 
 process percentiles {
-  label "small"
+  label "highmem"
 
   input:
   val qc_metric from Channel.from(params.percentiles.qc_metrics)
