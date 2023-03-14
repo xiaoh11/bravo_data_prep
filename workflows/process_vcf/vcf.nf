@@ -228,13 +228,13 @@ process merge_vcf {
   file variant_percentiles_indices from variant_percentiles_indices.collect()
 
   output:
-  tuple file("${chromosome}.bravo.vcf.gz"), file("${chromosome}.bravo.vcf.gz") into merged_vcf
+  tuple file("${chromosome}.bravo.vcf.gz"), file("${chromosome}.bravo.vcf.gz.csi") into merged_vcf
 
   publishDir "result/final/vcfs", pattern: "*.bravo.vcf.gz*"
 
   """
   cp ${vcf} temp.vcf.gz
-  tabix -f --csi temp.vcf.gz
+  cp ${vcf_index} temp.vcf.gz.csi
   for qc_metric in ${qc_metrics}; do
      bcftools annotate -a \${qc_metric}.variant_percentile.vcf.gz \
        -c INFO/\${qc_metric}_PCTL \
