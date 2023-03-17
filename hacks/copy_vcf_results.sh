@@ -3,22 +3,28 @@
 # Copy result from process vcf workflow to results GCP bucket
 
 SRC=/home/grosscol_umich_edu/data_prep/workflows/process_vcf/result
-RUN_NAME=fr10_2chrom
-DEST=/mnt/results/${RUN_NAME}/process_vcf
+RUN_NAME=freeze10
+BUCKET=bravo-results
+DEST=gs://${BUCKET}/${RUN_NAME}/process_vcf
+
+# Requires gsutil to be installed
+command -v gsutil --version 1> /dev/null 2>&1 || \
+{ echo >&2 "gsutil required but it's not installed.  Aborting."; exit 1; }
 
 if [ ! -d ${SRC} ]; then
   echo "Dir not found: ${SRC}"
   exit 1
 fi
 
-if [ ! -d ${DEST} ]; then
-  mkdir -p ${DEST}
+if ! gsutil ls "gs://${BUCKET}" 1> /dev/null 2>&1; then
+  echo "Bucket not found: gs://${BUCKET}"
+  exit 1
 fi
 
 # Copy the full coverage result
 echo "Copying qc_metrics" 
-cp -Lr ${SRC}/final/qc_metrics ${DEST}
+gsutil -m cp -r ${SRC}/final/qc_metrics ${DEST}
 
 # Copy the de-identified sequences
 echo "Copying vcfs" 
-cp -Lr ${SRC}/final/vcfs ${DEST}
+gsutil -m cp -r ${SRC}/final/vcfs ${DEST}
