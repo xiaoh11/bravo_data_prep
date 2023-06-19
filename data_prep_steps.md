@@ -106,10 +106,11 @@ To prepare a coverage data for each base-pair position, you can use all your BAM
 6. Tabix all coverage summary files.
 7. Reference all of the coverage files in `BASE_COVERAGE` in `default.py`.
 
+
 If you want to generate the coverage files based on vcf files:
 1. Instead of running the ```base_coverage/create_coverage.py```, using the vcf files as the input and run:
    ```
-   python base_coverage/create_coverage_vcf.py -i /path/to/the/vcf/.vcf.gz | bgzip -c > <chromosome>.full.tsv.gz
+   python base_coverage/create_coverage_vcf.py -i /path/to/the/vcf/<chromosome>.vcf.gz | bgzip -c > <chromosome>.full.tsv.gz
    ```
 2. Then, use the full files to generate the pruned files, for example:
    ```
