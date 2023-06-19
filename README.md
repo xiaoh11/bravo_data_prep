@@ -60,10 +60,10 @@ There are two data sets that Bravo API needs to run:
 data/
 ├── cache
 ├── coverage
-│   ├── bin_1
-│   ├── bin_25e-2
-│   ├── bin_50e-2
-│   ├── bin_75e-2
+│   ├── bin_1.00
+│   ├── bin_0.25
+│   ├── bin_0.50
+│   ├── bin_0.75
 │   └── full
 ├── crams
 │   ├── sequences
