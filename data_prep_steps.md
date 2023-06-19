@@ -106,6 +106,21 @@ To prepare a coverage data for each base-pair position, you can use all your BAM
 6. Tabix all coverage summary files.
 7. Reference all of the coverage files in `BASE_COVERAGE` in `default.py`.
 
+If you want to generate the coverage files based on vcf files:
+1. Instead of running the ```base_coverage/create_coverage.py```, using the vcf files as the input and run:
+   ```
+   python base_coverage/create_coverage_vcf.py -i /path/to/the/vcf/.vcf.gz | bgzip -c > <chromosome>.full.tsv.gz
+   ```
+2. Then, use the full files to generate the pruned files, for example:
+   ```
+   python prune_coverage_vcf.py -i 22.full.tsv.gz -l 0.25 -o 22.bin_0.25.tsv.gz
+   python prune_coverage_vcf.py -i 22.full.tsv.gz -l 0.50 -o 22.bin_0.50.tsv.gz
+   python prune_coverage_vcf.py -i 22.full.tsv.gz -l 0.75 -o 22.bin_0.75.tsv.gz
+   python prune_coverage_vcf.py -i 22.full.tsv.gz -l 1.00 -o 22.bin_1.00.tsv.gz
+   ```
+3. Tabix all coverage summary files.
+4. Reference all of the coverage files in `BASE_COVERAGE` in `default.py`.
+
 ## Prepare CRAM
 
 BRAVO uses IGV.js to visualize raw sequenced from up to 10 random alternate allele carriers. To enable this visualization BRAVO uses a pre-computed combined CRAM file with all reads from the carriers. We recommend to prepare a separate combined CRAM for each chromosome. The following steps describe hot to prepare the combined CRAM file:
